@@ -14,8 +14,8 @@ A modern, secure warehouse inventory management system built with PHP.
 
 ## Requirements
 
-- PHP 7.4 or higher
-- MySQL 5.7 or higher
+- PHP 8.4 or higher
+- MySQL 8.0 or higher
 - Apache with mod_rewrite enabled
 - Composer
 
@@ -145,7 +145,7 @@ DB_NAME=modernwarehouse
 After installation, an admin user is created automatically:
 
 - Username: `admin`
-- Password: `admin123`
+- Password: `12345678`
 
 **IMPORTANT:** Change the admin password immediately after first login!
 
