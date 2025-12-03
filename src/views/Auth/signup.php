@@ -51,10 +51,12 @@ $formAction = $isEdit ? "/edit_user/" . $user['id'] : "/signup";
                             <label for="password" class="form-label form-label-sm d-block text-start"><?= lang('password') ?></label>
                             <div class="input-group input-group-sm">
                                 <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                                <input id="password" name="password" type="password" class="form-control" <?= $isEdit ? '' : 'required' ?>>
+                                <input id="password" name="password" type="password" class="form-control" <?= $isEdit ? '' : 'required' ?> minlength="8">
                             </div>
                             <?php if ($isEdit): ?>
                                 <small class="form-text text-muted text-start d-block"><?= lang('leave_blank_to_keep_password') ?></small>
+                            <?php else: ?>
+                                <small class="form-text text-muted text-start d-block">Minimum 8 characters</small>
                             <?php endif; ?>
                         </div>
                     </div>
