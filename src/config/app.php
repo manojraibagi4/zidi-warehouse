@@ -38,8 +38,8 @@ if (!empty($closeConn)) {
 
 // Merge DB settings with base config
 return array_merge($config, [
-    'header'              => $dbSettings['header'] ?? 'Warehouse System',
-    'footer'              => $dbSettings['footer'] ?? 'Warehouse Admin',
+    'header'              => $dbSettings['header'] ?? 'ZIDI Warehouse System',
+    'footer'              => $dbSettings['footer'] ?? 'ZIDI Warehouse System',
     'default_language'    => $dbSettings['default_lang'] ?? 'en',
     'low_stock_threshold' => isset($dbSettings['lowstock_threshold']) 
                                 ? (int)$dbSettings['lowstock_threshold'] 
