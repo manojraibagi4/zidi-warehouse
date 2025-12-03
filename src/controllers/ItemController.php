@@ -819,27 +819,27 @@ class ItemController {
      */
     private function checkLowStockAndNotify()
     {
-        // Use the low_stock_threshold from your app configuration
-        $threshold = $this->appConfig['low_stock_threshold'] ?? 10;
+        try {
+            // Use the low_stock_threshold from your app configuration
+            $threshold = $this->appConfig['low_stock_threshold'] ?? 10;
 
-        // Ensure your ItemRepository has a getLowStockItems method
-        // that accepts a threshold.
-        // Calling the local method within ItemController
-        $lowStockItems = $this->getLowStockItems($threshold);
+            // Get low stock items
+            $lowStockItems = $this->getLowStockItems($threshold);
 
-        if (!empty($lowStockItems)) {
-
-            $this->sendLowStockEmail($lowStockItems);
-
-            // Only send email if email notifications are enabled in app config
-            // if ($this->appConfig['email']['enabled'] ?? false) {
-            //     $this->sendLowStockEmail($lowStockItems);
-            // } else {
-            //     error_log("DEBUG: Email notifications are disabled in app.php. Not sending low stock alert.");
-            // }
+            if (!empty($lowStockItems)) {
+                // ✅ Wrap email sending in try-catch to prevent breaking AJAX
+                try {
+                    $this->sendLowStockEmail($lowStockItems);
+                } catch (Exception $e) {
+                    // Log but don't break the response
+                    error_log("ERROR: Failed to send low stock notification email: " . $e->getMessage());
+                }
+            }
+        } catch (Exception $e) {
+            error_log("ERROR in checkLowStockAndNotify(): " . $e->getMessage());
+            // Don't throw - just log and continue
         }
     }
-
     /**
      * Sends a low stock email using PHPMailer.
      *
@@ -847,63 +847,82 @@ class ItemController {
      */
     private function sendLowStockEmail($lowStockItems)
     {
-
-
-
-        // Load settings from DB
-        $settings = $this->settingsRepo->getEmailSettings();
-        
-
-        // Retrieve email settings from app configuration
-        $fromEmail = $settings['from_email'] ?? 'noreply@example.com';
-        $fromName = $this->appConfig['email']['from_name'] ?? lang('email_from_name');
-        // $toEmail = $this->appConfig['email']['to_email'] ?? 'admin@example.com';
-        // $toName = $this->appConfig['email']['to_name'] ?? lang('email_to_name');
-
-          // Load recipients from DB
-        $recipients = $this->userRepo->getNotificationUsers();
-        if (empty($recipients)) {
-            error_log("DEBUG: No recipients found for low stock email.");
-            return;
-        }
-
-        $mail = new PHPMailer(true); // Enable exceptions
         try {
+            // Load settings from DB
+            $settings = $this->settingsRepo->getEmailSettings();
+            
+            // Validate email settings exist
+            if (empty($settings['from_email']) || empty($settings['app_password'])) {
+                error_log("ERROR: Email settings not configured properly. from_email or app_password missing.");
+                return; // Silently fail if email not configured
+            }
+
+            // Retrieve email settings
+            $fromEmail = $settings['from_email'];
+            $fromName = $this->appConfig['email']['from_name'] ?? lang('email_from_name');
+
+            // Load recipients from DB
+            $recipients = $this->userRepo->getNotificationUsers();
+            if (empty($recipients)) {
+                error_log("DEBUG: No recipients found for low stock email.");
+                return; // Silently return if no recipients
+            }
+
+            // Validate from email
+            if (!filter_var($fromEmail, FILTER_VALIDATE_EMAIL)) {
+                error_log("ERROR: Invalid from email address: " . $fromEmail);
+                return;
+            }
+
+            $mail = new PHPMailer(true); // Enable exceptions
+            
             // Server settings
             $mail->isSMTP();
             $mail->Host       = 'smtp.gmail.com';
             $mail->SMTPAuth   = true;
             $mail->Username   = $fromEmail;
-            // !!! IMPORTANT: Replace 'YOUR_APP_PASSWORD' with a Gmail App Password !!!
-            // DO NOT use your regular Gmail password here, especially in production.
-            $mail->Password   = $settings['app_password'] ?? ''; // Configure this securely
+            $mail->Password   = $settings['app_password'];
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
             $mail->Port       = 465;
-            $mail->CharSet    = 'UTF-8'; // Ensure proper character encoding
+            $mail->CharSet    = 'UTF-8';
+            
+            // ✅ Add timeout settings to prevent hanging
+            $mail->Timeout    = 10; // seconds
+            $mail->SMTPKeepAlive = false;
+            
+            // ✅ Disable debug output (this can cause JSON errors)
+            $mail->SMTPDebug  = 0; // Set to 2 for debugging, 0 for production
 
-            if (!filter_var($fromEmail, FILTER_VALIDATE_EMAIL)) {
-                error_log("ERROR: Invalid from email: " . $fromEmail);
-                return;
-            }
-
-            // Recipients
+            // Set sender
             $mail->setFrom($fromEmail, $fromName);
-            //$mail->addAddress($toEmail, $toName);
 
-            // Add recipients
+            // Add recipients - validate each email
+            $validRecipients = 0;
             foreach ($recipients as $user) {
-                $mail->addAddress($user['email'], $user['username']);
+                if (!empty($user['email']) && filter_var($user['email'], FILTER_VALIDATE_EMAIL)) {
+                    $mail->addAddress($user['email'], $user['username'] ?? '');
+                    $validRecipients++;
+                } else {
+                    error_log("WARNING: Invalid recipient email skipped: " . ($user['email'] ?? 'empty'));
+                }
+            }
+            
+            if ($validRecipients === 0) {
+                error_log("ERROR: No valid recipient email addresses found.");
+                return;
             }
 
             // Content
             $mail->isHTML(true);
             $mail->Subject = lang('email_low_stock_subject');
 
+            // Build email body
             $body = "<h3>" . sprintf(lang('email_low_stock_heading'), ($this->appConfig['low_stock_threshold'] ?? 10)) . "</h3>";
             $body .= "<table border='1' cellpadding='6' cellspacing='0' style='border-collapse: collapse; font-family: Arial, sans-serif; font-size: 14px;'>
             <thead style='background-color: #f2f2f2;'>
                 <tr>
                     <th>" . lang('product_name') . "</th>
+                    <th>" . lang('article_no') . "</th>
                     <th>" . lang('manufacturer') . "</th>
                     <th>" . lang('size') . "</th>
                     <th>" . lang('color') . "</th>
@@ -918,30 +937,37 @@ class ItemController {
 
             foreach ($lowStockItems as $item) {
                 $body .= "<tr>
-                <td>" . htmlspecialchars($item['productname']) . "</td>
-                <td>" . htmlspecialchars($item['manufacturer']) . "</td>
-                <td>" . htmlspecialchars($item['size']) . "</td>
-                <td>" . htmlspecialchars($item['color']) . "</td>
-                <td>" . htmlspecialchars($item['quantity']) . "</td>
+                <td>" . htmlspecialchars($item['productname'] ?? '') . "</td>
+                <td>" . htmlspecialchars($item['article_no'] ?? '') . "</td>
+                <td>" . htmlspecialchars($item['manufacturer'] ?? '') . "</td>
+                <td>" . htmlspecialchars($item['size'] ?? '') . "</td>
+                <td>" . htmlspecialchars($item['color'] ?? '') . "</td>
+                <td>" . htmlspecialchars($item['quantity'] ?? '0') . "</td>
                 <td>" . ($item['grafted'] ? lang('yes') : lang('no')) . "</td>
                 <td>" . ($item['grafted'] ? htmlspecialchars($item['club'] ?? '-') : '-') . "</td>
-                <td>" . htmlspecialchars($item['expiration_year']) . "</td>
-                <td>" . htmlspecialchars($item['last_change']) . "</td>
-              </tr>";
+                <td>" . htmlspecialchars($item['expiration_year'] ?? '') . "</td>
+                <td>" . htmlspecialchars($item['last_change'] ?? '') . "</td>
+            </tr>";
             }
 
             $body .= "</tbody></table><p>" . lang('email_low_stock_footer') . "</p>";
 
             $mail->Body = $body;
+            
+            // Send email
             $mail->send();
-            error_log("DEBUG: Low stock email sent successfully to " . $toEmail);
+            error_log("SUCCESS: Low stock email sent successfully to " . $validRecipients . " recipient(s)");
+            
         } catch (Exception $e) {
-            error_log("ERROR: PHPMailer failed to send low stock email. Mailer Error: {$mail->ErrorInfo}. Exception: {$e->getMessage()}");
-            // Optionally, you could set a session message for admin if email failed
-            // $_SESSION['message'] = ['type' => 'warning', 'text' => 'Low stock email failed to send. Check logs.'];
+            // ✅ Catch and log the error WITHOUT outputting anything
+            error_log("ERROR: PHPMailer failed to send low stock email. Error: " . $e->getMessage());
+            if (isset($mail)) {
+                error_log("ERROR: PHPMailer ErrorInfo: " . $mail->ErrorInfo);
+            }
+            // Don't throw the exception - just log and continue
+            // This prevents breaking AJAX responses
         }
     }
-
     // Add these methods to your ItemController class (src/controllers/ItemController.php)
 
     /**

@@ -224,12 +224,13 @@ function h($value) {
                                     <th scope="col"><?= Helper::renderSortHeader('id', '#', $filters) ?></th>
                                     <th scope="col"><?= Helper::renderSortHeader('image', lang('image'), $filters) ?></th>
                                     <th scope="col"><?= Helper::renderSortHeader('productname', lang('product_name'), $filters) ?></th>
+                                    <th scope="col"><?= Helper::renderSortHeader('article_no', lang('article_no'), $filters) ?></th>
                                     <th scope="col"><?= Helper::renderSortHeader('manufacturer', lang('manufacturer'), $filters) ?></th>
                                     <th scope="col"><?= Helper::renderSortHeader('size', lang('size'), $filters) ?></th>
                                     <th scope="col"><?= Helper::renderSortHeader('color', lang('color'), $filters) ?></th>
                                     <th scope="col"><?= Helper::renderSortHeader('quantity', lang('quantity'), $filters) ?></th>
-                                    <th scope="col"><?= Helper::renderSortHeader('grafted', lang('grafted'), $filters) ?></th>
-                                    <th scope="col"><?= Helper::renderSortHeader('club', lang('club'), $filters) ?></th>
+                                    <!-- <th scope="col"><?= Helper::renderSortHeader('grafted', lang('grafted'), $filters) ?></th>
+                                    <th scope="col"><?= Helper::renderSortHeader('club', lang('club'), $filters) ?></th> -->
                                     <th scope="col"><?= Helper::renderSortHeader('expiration_year', lang('expiration_year'), $filters) ?></th>
                                     <th scope="col"><?= Helper::renderSortHeader('last_change', lang('last_change'), $filters) ?></th>
                                     <th scope="col"><?= lang('actions') ?></th>
@@ -259,12 +260,13 @@ function h($value) {
                                             <?php endif; ?>
                                         </td>
                                         <td id="itemProductname_<?= h($item['id']) ?>"><?= h($item['productname']) ?></td>
+                                        <td id="itemArticleNo_<?= h($item['id']) ?>"><?= h($item['article_no']) ?></td>
                                         <td id="itemManufacturer_<?= h($item['id']) ?>"><?= h($item['manufacturer']) ?></td>
                                         <td id="itemSize_<?= h($item['id']) ?>"><?= h($item['size']) ?></td>
                                         <td id="itemColor_<?= h($item['id']) ?>"><?= h($item['color']) ?></td>
                                         <td id="itemQuantity_<?= h($item['id']) ?>"><?= h($item['quantity']) ?></td>
-                                        <td id="itemGrafted_<?= h($item['id']) ?>"><?= $item['grafted'] ? lang('yes') : lang('no') ?></td>
-                                        <td id="itemClub_<?= h($item['id']) ?>"><?= h($item['club']) ?></td>
+                                        <!-- <td id="itemGrafted_<?= h($item['id']) ?>"><?= $item['grafted'] ? lang('yes') : lang('no') ?></td>
+                                        <td id="itemClub_<?= h($item['id']) ?>"><?= h($item['club']) ?></td> -->
                                         <td id="itemExpiration_<?= h($item['id']) ?>"><?= h($item['expiration_year']) ?></td>
                                         <td>
                                             <?php

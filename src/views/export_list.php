@@ -243,12 +243,13 @@ function h($value) {
                         <th scope="col"><?= Helper::renderSortHeader('id', '#', $filters ?? []) ?></th>
                         <th scope="col"><?= Helper::renderSortHeader('image', lang('image') ?? 'Image', $filters ?? []) ?></th>
                         <th scope="col"><?= Helper::renderSortHeader('productname', lang('product_name') ?? 'Product Name', $filters ?? []) ?></th>
+                        <th scope="col"><?= Helper::renderSortHeader('article_no', lang('article_no') ?? 'Article No', $filters ?? []) ?></th>
                         <th scope="col"><?= Helper::renderSortHeader('manufacturer', lang('manufacturer') ?? 'Manufacturer', $filters ?? []) ?></th>
                         <th scope="col"><?= Helper::renderSortHeader('size', lang('size') ?? 'Size', $filters ?? []) ?></th>
                         <th scope="col"><?= Helper::renderSortHeader('color', lang('color') ?? 'Color', $filters ?? []) ?></th>
                         <th scope="col"><?= Helper::renderSortHeader('quantity', lang('quantity') ?? 'Quantity', $filters ?? []) ?></th>
-                        <th scope="col"><?= Helper::renderSortHeader('grafted', lang('grafted') ?? 'Grafted', $filters ?? []) ?></th>
-                        <th scope="col"><?= Helper::renderSortHeader('club', lang('club') ?? 'Club', $filters ?? []) ?></th>
+                        <!-- <th scope="col"><?= Helper::renderSortHeader('grafted', lang('grafted') ?? 'Grafted', $filters ?? []) ?></th>
+                        <th scope="col"><?= Helper::renderSortHeader('club', lang('club') ?? 'Club', $filters ?? []) ?></th> -->
                         <th scope="col"><?= Helper::renderSortHeader('expiration_year', lang('expiration_year') ?? 'Expiration Year', $filters ?? []) ?></th>
                         <th scope="col"><?= Helper::renderSortHeader('last_change', lang('last_change') ?? 'Last Change', $filters ?? []) ?></th>
                     </tr>
@@ -279,12 +280,13 @@ function h($value) {
                                 <?php endif; ?>
                             </td>
                             <td><?= h($item['productname'] ?? '') ?></td>
+                            <td><?= h($item['article_no'] ?? '') ?></td>
                             <td><?= h($item['manufacturer'] ?? '') ?></td>
                             <td><?= h($item['size'] ?? '') ?></td>
                             <td><?= h($item['color'] ?? '') ?></td>
                             <td><?= h($item['quantity'] ?? '') ?></td>
-                            <td><?= ($item['grafted'] ?? false) ? h(lang('yes') ?? 'Yes') : h(lang('no') ?? 'No') ?></td>
-                            <td><?= h($item['club'] ?? '-') ?></td>
+                            <!-- <td><?= ($item['grafted'] ?? false) ? h(lang('yes') ?? 'Yes') : h(lang('no') ?? 'No') ?></td>
+                            <td><?= h($item['club'] ?? '-') ?></td> -->
                             <td><?= h($item['expiration_year'] ?? '') ?></td>
                             <td>
                                 <?php
