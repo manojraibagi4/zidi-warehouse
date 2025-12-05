@@ -95,11 +95,11 @@ return [
     //Signup
     'confirm_password' => 'Passwort bestätigen',
     'already_have_account_login' => 'Haben Sie bereits ein Konto? Anmelden',
-    'sign_up_new_user' => 'Neuen Benutzer anmelden',
+    'sign_up_new_user' => 'Neuen Benutzer registrieren',
     'access_denied' => 'Zugriff verweigert',
     'signup_success' => 'Anmeldung erfolgreich',
     'username_exists' => 'Benutzer existiert bereits',
-    'password_mismatch' => 'Passwortkonflikt',
+    'password_mismatch' => 'Passwörter stimmen nicht überein',
     'email' => 'Email',
     'enable_low_stock_email' => 'Aktivieren Sie die E-Mail-Benachrichtigung bei niedrigem Lagerbestand',
     'email_notify' => 'E-Mail-Benachrichtigung',
@@ -197,7 +197,7 @@ return [
     'cannot_delete_self' => 'Sie können Ihr eigenes Konto nicht löschen.',
 
     'adding' => 'hinzufügen',
-    'saving' => 'sparen',
+    'saving' => 'Speichern',
     'updating' => 'Aktualisierung',
     'creating_backup' => 'Backup erstellen',
     'backup_database' => 'Backup-Datenbank',
@@ -205,7 +205,7 @@ return [
     'restore_sql_backup' => 'SQL-Backup wiederherstellen',
     'restore_db_backup' => 'DB-Backup wiederherstellen',
     'restoring_db' => 'Datenbank wird wiederhergestellt...',
-    'database_settings' => 'Database Settings',
+    'database_settings' => 'Datenbankeinstellungen',
 
     // Add these to your existing language file
     'app_settings' => 'App-Einstellungen',
@@ -307,7 +307,7 @@ return [
     'cancel' => 'Abbrechen',
     'update' => 'Aktualisieren',
     'view' => 'Ansehen',
-    'na' => 'N/A',
+    'na' => 'k. A.',
     'action' => 'Aktion',
 
     // ✅ NEW: Article, Supplier, and Category Filter Labels
