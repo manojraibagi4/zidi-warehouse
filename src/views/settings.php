@@ -105,7 +105,7 @@ require_once __DIR__ . '/../../includes/lang.php';
                                     <input type="email" id="from_email" name="from_email"
                                             class="form-control"
                                             value="<?= htmlspecialchars($settings->getFromEmail()) ?>"
-                                            required>
+                                            >
                                 </div>
 
                                 <div class="mb-3">
@@ -115,7 +115,7 @@ require_once __DIR__ . '/../../includes/lang.php';
                                     <input type="password" id="app_password" name="app_password" autocomplete="current-password"
                                             class="form-control"
                                             value="<?= htmlspecialchars($settings->getAppPassword()) ?>"
-                                            required>
+                                            >
                                 </div>
 
                                 <div class="row g-3 mb-3">
