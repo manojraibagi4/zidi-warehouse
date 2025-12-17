@@ -269,6 +269,13 @@ class CorsHandler {
      */
     public static function handle(): bool {
         try {
+
+            $cors_enabled = self::getEnvBool('CORS_ENABLED', false);
+
+            if (!$cors_enabled) {
+                // CORS is disabled
+                return true;
+            }
             $origin = self::getRequestOrigin();
             
             // If no origin, it might be a same-origin request
@@ -309,6 +316,7 @@ function handleCors(): bool {
  * Simple middleware function
  */
 function applyCorsMiddleware(): bool {
+    
     if (!CorsHandler::handle()) {
         http_response_code(403);
         header('Content-Type: application/json');
