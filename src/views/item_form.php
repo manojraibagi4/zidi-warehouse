@@ -241,9 +241,9 @@ $suppliers = $settingsRepo->getSuppliers();
 
                             <div class="col-md-6">
                                 <label for="expiration_year" class="form-label">
-                                    <i class="bi bi-calendar me-2"></i><?= lang('expiration_year') ?> <span class="text-danger">*</span>
+                                    <i class="bi bi-calendar me-2"></i><?= lang('expiration_year') ?> <span class="text-danger"></span>
                                 </label>
-                                <input type="number" class="form-control" id="expiration_year" name="expiration_year" value="<?= $expiration_year ?>" min="<?= date('Y') ?>" max="<?= date('Y') + 20 ?>" required>
+                                <input type="number" class="form-control" id="expiration_year" name="expiration_year" value="<?= $expiration_year ?>">
                             </div>
                         </div>
 
