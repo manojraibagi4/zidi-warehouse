@@ -24,7 +24,7 @@ class Item {
     public ?string $color_number = null;
     public ?float $unit_price = null;
     public ?float $total_price = null;
-public ?string $supplier = null;
+	public ?string $supplier = null;
 
     // The Item class constructor might not strictly need the connection
     // if all DB operations are handled by ItemRepository.
