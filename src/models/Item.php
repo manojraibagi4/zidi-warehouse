@@ -10,7 +10,7 @@ class Item {
     public $color;
     public $quantity;
     public $img; // Path to image (e.g., /img/uploaded/my-image.jpg)
-    public string $mime_type; // <-- add this
+    public ?string $mime_type = 'image/png'; // <-- add this
 
     public $grafted; // Boolean (stored as TINYINT(1) in DB, 0 or 1)
     public $club; // Text or null
@@ -24,7 +24,7 @@ class Item {
     public ?string $color_number = null;
     public ?float $unit_price = null;
     public ?float $total_price = null;
-public ?string $supplier = null;
+	public ?string $supplier = null;
 
     // The Item class constructor might not strictly need the connection
     // if all DB operations are handled by ItemRepository.
