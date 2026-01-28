@@ -69,6 +69,21 @@ require_once __DIR__ . '/../../includes/lang.php';
                                                 required>
                                     </div>
 
+                                    <!-- Expiry Days Input -->
+                                    <div class="col-md-6">
+                                        <label for="expiry_days" class="form-label">
+                                            <i class="bi bi-calendar-x me-2"></i><?= lang('expiry_days') ?>
+                                        </label>
+                                        <input type="number" id="expiry_days" name="expiry_days"
+                                                class="form-control"
+                                                value="<?= htmlspecialchars($settings->getExpiryDays()) ?>"
+                                                min="1"
+                                                required>
+                                        <small class="form-text text-muted"><?= lang('expiry_days_help') ?></small>
+                                    </div>
+                                </div>
+
+                                <div class="row g-3 mb-3">
                                     <div class="col-md-6">
                                         <label for="default_lang" class="form-label">
                                             <i class="bi bi-translate me-2"></i><?= lang('default_lang') ?>

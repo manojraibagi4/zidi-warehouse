@@ -26,7 +26,7 @@ class ItemController {
     private array $lang; // To hold language strings
 
     // Constants for image handling
-    private const DEFAULT_PLACEHOLDER_IMG = '/img/default-placeholder.png'; // Updated path
+    private const DEFAULT_PLACEHOLDER_IMG = '/public/img/default-placeholder.png'; // Updated path
     private const UPLOAD_BASE_DIR = __DIR__ . '/../../public/img/uploaded/'; // Make sure this directory exists and is writable!
 
     /**
@@ -119,6 +119,8 @@ class ItemController {
             'category' => $_GET['category'] ?? '',  // ✅ NEW
             'grafted' => $_GET['grafted'] ?? '',
             'club' => $_GET['club'] ?? '',
+            'lowstock' => $_GET['lowstock'] ?? '',
+            'trackexpiry' => $_GET['trackexpiry'] ?? '',
             'savedFilters' => $savedFilters,
             'sort' => $_GET['sort'] ?? 'id',
             'order' => $_GET['order'] ?? 'DESC',
@@ -200,9 +202,9 @@ class ItemController {
             header('Location: /dashboard');
             exit;
         }
-        
+
         $savedFilters = $this->loadSavedFilters();
-        
+
         $filters = [
             'productname' => $_GET['productname'] ?? '',
             'article_no' => $_GET['article_no'] ?? '',  // ✅ NEW
@@ -213,6 +215,8 @@ class ItemController {
             'category' => $_GET['category'] ?? '',  // ✅ NEW
             'grafted' => $_GET['grafted'] ?? '',
             'club' => $_GET['club'] ?? '',
+            'lowstock' => $_GET['lowstock'] ?? '',
+            'trackexpiry' => $_GET['trackexpiry'] ?? '',
             'sort' => $_GET['sort'] ?? 'id',
             'order' => $_GET['order'] ?? 'DESC',
         ];
@@ -484,13 +488,7 @@ class ItemController {
             // ✅ FIXED: Only set club if grafted is checked
             $item->club = ($item->grafted === 1 && !empty(trim($_POST['club'] ?? ''))) ? trim($_POST['club']) : null;
 
-            // ✅ FIXED: Make sure expiration_year is properly set (this is a YEAR type, not DATE)
-            $expiration_year_raw = trim($_POST['expiration_year'] ?? '');
-            if (!empty($expiration_year_raw) && is_numeric($expiration_year_raw)) {
-                $item->expiration_year = (int)$expiration_year_raw;
-            } else {
-                $item->expiration_year = (int)(date('Y') + 5); // default to 5 years from now
-            }
+           
            
 
             
@@ -534,7 +532,7 @@ class ItemController {
 
             // Debug logging to see what values are being set
             error_log("DEBUG: expiry_date = " . ($item->expiry_date ?? 'NULL'));
-            error_log("DEBUG: expiration_year = " . $item->expiration_year);
+            
 
             // 3. Create the item in the database
             if ($this->itemRepository->create($item)) {
@@ -625,7 +623,7 @@ class ItemController {
             // ✅ FIXED: Only set club if grafted is checked
             $item->club = ($item->grafted === 1 && !empty(trim($_POST['club'] ?? ''))) ? trim($_POST['club']) : null;
             
-            $item->expiration_year = (int)($_POST['expiration_year'] ?? $item->expiration_year);
+            
             $item->last_edited_by = $_SESSION['username'] ?? 'system';
         
             
@@ -929,7 +927,7 @@ class ItemController {
                     <th>" . lang('quantity') . "</th>
                     <th>" . lang('grafted') . "</th>
                     <th>" . lang('club') . "</th>
-                    <th>" . lang('expiration_year') . "</th>
+                    <th>" . lang('expiry_date') . "</th>
                     <th>" . lang('last_change') . "</th>
                 </tr>
             </thead>
@@ -945,7 +943,7 @@ class ItemController {
                 <td>" . htmlspecialchars($item['quantity'] ?? '0') . "</td>
                 <td>" . ($item['grafted'] ? lang('yes') : lang('no')) . "</td>
                 <td>" . ($item['grafted'] ? htmlspecialchars($item['club'] ?? '-') : '-') . "</td>
-                <td>" . htmlspecialchars($item['expiration_year'] ?? '') . "</td>
+                <td>" . htmlspecialchars($item['expiry_date'] ?? '') . "</td>
                 <td>" . htmlspecialchars($item['last_change'] ?? '') . "</td>
             </tr>";
             }
@@ -980,16 +978,16 @@ class ItemController {
         try {
             // Get JSON input
             $input = json_decode(file_get_contents('php://input'), true);
-            
+
             if (!isset($input['article_no']) || empty(trim($input['article_no']))) {
-                throw new Exception('Article number is required');
+                throw new Exception('Search term is required');
             }
 
-            $articleNo = trim($input['article_no']);
-            
-            // Search for items with this article number
-            $items = $this->itemRepository->findByArticleNumber($articleNo);
-            
+            $searchTerm = trim($input['article_no']);
+
+            // Search for items by article number OR product name
+            $items = $this->itemRepository->searchUnified($searchTerm);
+
             if (empty($items)) {
                 $response['message'] = 'No items found';
             } else {

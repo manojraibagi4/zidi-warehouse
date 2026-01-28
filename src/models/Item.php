@@ -14,7 +14,7 @@ class Item {
 
     public $grafted; // Boolean (stored as TINYINT(1) in DB, 0 or 1)
     public $club; // Text or null
-    public $expiration_year; // Year (e.g., 2028)
+    // public $expiration_year; // Year (e.g., 2028)
     public $last_change; // DATETIME string (e.g., 'YYYY-MM-DD HH:MM:SS')
     public $last_edited_by; // <-- NEW FIELD
 

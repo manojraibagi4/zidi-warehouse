@@ -30,7 +30,8 @@ class SettingsRepository {
             'from_email' => '',
             'app_password' => '',
             'date_format' => 'Y-m-d',   // default
-            'time_zone' => 'UTC'        // default
+            'time_zone' => 'UTC',       // default
+            'expiry_days' => '10'       // default
         ];
 
         if ($this->tableExists()) {
@@ -54,7 +55,8 @@ class SettingsRepository {
             $data['from_email'],
             $data['app_password'],
             $data['date_format'],
-            $data['time_zone']
+            $data['time_zone'],
+            $data['expiry_days']
         );
     }
 

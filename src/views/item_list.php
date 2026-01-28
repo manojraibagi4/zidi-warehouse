@@ -164,7 +164,29 @@ function h($value) {
                                                 <?php endif; ?>
                                             </select>
                                         </div>
-                                        
+
+                                        <!-- Low Stock Filter -->
+                                        <div class="col-12 col-md-4">
+                                            <label for="filterLowStock" class="form-label">
+                                                <i class="bi bi-exclamation-triangle me-2"></i><?= lang('low_stock_filter') ?>
+                                            </label>
+                                            <select class="form-select" id="filterLowStock" name="lowstock">
+                                                <option value=""><?= lang('all') ?></option>
+                                                <option value="1" <?= (isset($filters['lowstock']) && $filters['lowstock'] === '1') ? 'selected' : '' ?>><?= lang('yes') ?></option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Track Expiry Filter -->
+                                        <div class="col-12 col-md-4">
+                                            <label for="filterTrackExpiry" class="form-label">
+                                                <i class="bi bi-calendar-check me-2"></i><?= lang('track_expiry_filter') ?>
+                                            </label>
+                                            <select class="form-select" id="filterTrackExpiry" name="trackexpiry">
+                                                <option value=""><?= lang('all') ?></option>
+                                                <option value="1" <?= (isset($filters['trackexpiry']) && $filters['trackexpiry'] === '1') ? 'selected' : '' ?>><?= lang('track_expiry') ?></option>
+                                            </select>
+                                        </div>
+
                                         <!-- Filter Buttons -->
                                         <div class="col-12">
                                             <button id="applyFiltersBtn" type="submit" class="btn btn-primary me-2">
@@ -231,7 +253,7 @@ function h($value) {
                                     <th scope="col"><?= Helper::renderSortHeader('quantity', lang('quantity'), $filters) ?></th>
                                     <!-- <th scope="col"><?= Helper::renderSortHeader('grafted', lang('grafted'), $filters) ?></th>
                                     <th scope="col"><?= Helper::renderSortHeader('club', lang('club'), $filters) ?></th> -->
-                                    <th scope="col"><?= Helper::renderSortHeader('expiration_year', lang('expiration_year'), $filters) ?></th>
+                                    <th scope="col"><?= Helper::renderSortHeader('expiry_date', lang('expiry_date'), $filters) ?></th>
                                     <th scope="col"><?= Helper::renderSortHeader('last_change', lang('last_change'), $filters) ?></th>
                                     <th scope="col"><?= lang('actions') ?></th>
                                 </tr>
@@ -256,7 +278,7 @@ function h($value) {
                                                 <img src="data:<?= h($item['mime_type'] ?? 'image/png') ?>;base64,<?= base64_encode($item['img']) ?>" 
                                                     alt="Product Image" class="img-thumbnail" style="max-width: 50px; height: auto;">
                                             <?php else: ?>
-                                                <img src="/img/default-placeholder.png" alt="No Image" class="img-thumbnail" style="max-width: 50px; height: auto;">
+                                                <img src="/public/img/default-placeholder.png" alt="No Image" class="img-thumbnail" style="max-width: 50px; height: auto;">
                                             <?php endif; ?>
                                         </td>
                                         <td id="itemProductname_<?= h($item['id']) ?>"><?= h($item['productname']) ?></td>
@@ -267,7 +289,7 @@ function h($value) {
                                         <td id="itemQuantity_<?= h($item['id']) ?>"><?= h($item['quantity']) ?></td>
                                         <!-- <td id="itemGrafted_<?= h($item['id']) ?>"><?= $item['grafted'] ? lang('yes') : lang('no') ?></td>
                                         <td id="itemClub_<?= h($item['id']) ?>"><?= h($item['club']) ?></td> -->
-                                        <td id="itemExpiration_<?= h($item['id']) ?>"><?= h($item['expiration_year']) ?></td>
+                                        <td id="itemExpiration_<?= h($item['id']) ?>"><?= h($item['expiry_date']) ?></td>
                                         <td>
                                             <?php
                                             if (!empty($item['last_change'])) {

@@ -27,7 +27,7 @@ $where = [];
 $params = [
     'productname', 'category', 'article_no', 'manufacturer', 'size', 
     'color', 'color_number', 'supplier', 'grafted', 'club', 
-    'expiration_year', 'last_edited_by'
+    'last_edited_by'  // removed 'expiration_year'
 ];
 
 foreach ($params as $param) {
@@ -84,7 +84,7 @@ $spreadsheet = new Spreadsheet();
 $sheet = $spreadsheet->getActiveSheet();
 $sheet->setTitle('Artikel');
 
-// Set column widths
+// Set column widths (removed column P for expiration_year)
 $columnWidths = [
     'A' => 8,   // ID
     'B' => 20,  // Produktname (Bezeichnung)
@@ -101,19 +101,18 @@ $columnWidths = [
     'M' => 15,  // Lieferant
     'N' => 8,   // Veredelt
     'O' => 12,  // Verein
-    'P' => 15,  // Ablaufjahr
-    'Q' => 12,  // Ablaufdatum
-    'R' => 15,  // Bild
-    'S' => 18,  // Letzte Änderung
-    'T' => 15,  // Zuletzt bearbeitet von
-    'U' => 12,  // MIME-Typ
+    'P' => 12,  // Ablaufdatum (moved from Q to P)
+    'Q' => 15,  // Bild (moved from R to Q)
+    'R' => 18,  // Letzte Änderung (moved from S to R)
+    'S' => 15,  // Zuletzt bearbeitet von (moved from T to S)
+    'T' => 12,  // MIME-Typ (moved from U to T)
 ];
 
 foreach ($columnWidths as $column => $width) {
     $sheet->getColumnDimension($column)->setWidth($width);
 }
 
-// Column headers - All in German (keeping all original columns)
+// Column headers - All in German (removed Ablaufjahr)
 $headers = [
     'ID', 
     'Bezeichnung',           // Produktname
@@ -130,8 +129,7 @@ $headers = [
     'Lieferant',  
     'Veredelt', 
     'Verein', 
-    'Ablaufjahr', 
-    'Ablaufdatum',         // Expiry Date
+    'Ablaufdatum',         // Expiry Date (removed Ablaufjahr)
     'Bild', 
     'Letzte Änderung',
     'Zuletzt bearbeitet von',
@@ -196,7 +194,7 @@ while ($item = $result->fetch_assoc()) {
 
     $graftedText = $item['grafted'] ? 'Ja' : 'Nein';
 
-    // All columns in order, including empty placeholder for image
+    // All columns in order, including empty placeholder for image (removed expiration_year)
     $columns = [
         $item['id'],
         $item['productname'],      // Bezeichnung
@@ -213,8 +211,7 @@ while ($item = $result->fetch_assoc()) {
         $item['supplier'],         // Lieferant
         $graftedText,              // Veredelt
         $item['club'],             // Verein
-        $item['expiration_year'],  // Ablaufjahr
-        $formattedExpiryDate,      // Ablaufdatum
+        $formattedExpiryDate,      // Ablaufdatum (removed expiration_year)
         '',                        // Placeholder for image
         $formattedLastChange,      // Letzte Änderung
         $item['last_edited_by'],   // Zuletzt bearbeitet von
@@ -238,7 +235,7 @@ while ($item = $result->fetch_assoc()) {
     $rowHeight = 70;
     $sheet->getRowDimension($rowIndex)->setRowHeight($rowHeight);
 
-    // Handle BLOB image (now in column R)
+    // Handle BLOB image (now in column Q instead of R)
     if (!empty($item['img'])) {
         $tmpFile = tempnam(sys_get_temp_dir(), 'img');
         file_put_contents($tmpFile, $item['img']);
@@ -267,7 +264,7 @@ while ($item = $result->fetch_assoc()) {
             $drawing->setHeight($maxHeight);
         }
         
-        $drawing->setCoordinates('R' . $rowIndex); // column R = 18
+        $drawing->setCoordinates('Q' . $rowIndex); // column Q = 17 (moved from R)
         $drawing->setOffsetX(5);
         $drawing->setOffsetY(5);
         $drawing->setWorksheet($sheet);
@@ -298,8 +295,8 @@ if ($lastRow > 1) {
 // Apply text wrapping and alignment for description column
 $sheet->getStyle('F2:F' . $lastRow)->getAlignment()->setWrapText(true);
 
-// Center align certain columns
-$centerAlignColumns = ['A', 'J', 'N', 'P', 'Q', 'U']; // ID, Anzahl, Veredelt, Ablaufjahr, Ablaufdatum, MIME-Typ
+// Center align certain columns (removed P for expiration_year)
+$centerAlignColumns = ['A', 'J', 'N', 'P', 'T']; // ID, Anzahl, Veredelt, Ablaufdatum, MIME-Typ
 foreach ($centerAlignColumns as $col) {
     if ($lastRow > 1) {
         $sheet->getStyle($col . '2:' . $col . $lastRow)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);

@@ -182,7 +182,29 @@ function h($value) {
                         <?php endif; ?>
                     </select>
                 </div>
-                
+
+                <!-- Low Stock Filter -->
+                <div class="col-12 col-md-4">
+                    <label for="lowstock-filter" class="form-label">
+                        <i class="bi bi-exclamation-triangle me-2"></i><?= h(lang('low_stock_filter')) ?>
+                    </label>
+                    <select class="form-select" id="lowstock-filter" name="lowstock">
+                        <option value=""><?= h(lang('all')) ?></option>
+                        <option value="1" <?= (isset($filters['lowstock']) && $filters['lowstock'] === '1') ? 'selected' : '' ?>><?= h(lang('yes')) ?></option>
+                    </select>
+                </div>
+
+                <!-- Track Expiry Filter -->
+                <div class="col-12 col-md-4">
+                    <label for="trackexpiry-filter" class="form-label">
+                        <i class="bi bi-calendar-check me-2"></i><?= h(lang('track_expiry_filter')) ?>
+                    </label>
+                    <select class="form-select" id="trackexpiry-filter" name="trackexpiry">
+                        <option value=""><?= h(lang('all')) ?></option>
+                        <option value="1" <?= (isset($filters['trackexpiry']) && $filters['trackexpiry'] === '1') ? 'selected' : '' ?>><?= h(lang('track_expiry')) ?></option>
+                    </select>
+                </div>
+
                 <!-- Filter Buttons -->
                 <div class="col-12" id="filter-buttons">
                     <button type="submit" class="btn btn-primary me-2" id="apply-filters-btn">
@@ -250,7 +272,7 @@ function h($value) {
                         <th scope="col"><?= Helper::renderSortHeader('quantity', lang('quantity') ?? 'Quantity', $filters ?? []) ?></th>
                         <!-- <th scope="col"><?= Helper::renderSortHeader('grafted', lang('grafted') ?? 'Grafted', $filters ?? []) ?></th>
                         <th scope="col"><?= Helper::renderSortHeader('club', lang('club') ?? 'Club', $filters ?? []) ?></th> -->
-                        <th scope="col"><?= Helper::renderSortHeader('expiration_year', lang('expiration_year') ?? 'Expiration Year', $filters ?? []) ?></th>
+                        <th scope="col"><?= Helper::renderSortHeader('expiry_date', lang('expiry_date') ?? 'Expiray Date', $filters ?? []) ?></th>
                         <th scope="col"><?= Helper::renderSortHeader('last_change', lang('last_change') ?? 'Last Change', $filters ?? []) ?></th>
                     </tr>
                 </thead>
@@ -273,7 +295,7 @@ function h($value) {
                                              class="img-thumbnail"
                                              style="width:50px; height:50px; object-fit:cover;">
                                 <?php else: ?>
-                                    <img src="/img/default-placeholder.png"
+                                    <img src="/public/img/default-placeholder.png"
                                              alt="<?= h($item['productname'] ?? 'No Image') ?>"
                                              class="img-thumbnail"
                                              style="width:50px; height:50px; object-fit:cover;">
@@ -287,7 +309,7 @@ function h($value) {
                             <td><?= h($item['quantity'] ?? '') ?></td>
                             <!-- <td><?= ($item['grafted'] ?? false) ? h(lang('yes') ?? 'Yes') : h(lang('no') ?? 'No') ?></td>
                             <td><?= h($item['club'] ?? '-') ?></td> -->
-                            <td><?= h($item['expiration_year'] ?? '') ?></td>
+                            <td><?= h($item['expiry_date'] ?? '') ?></td>
                             <td>
                                 <?php
                                 if (!empty($item['last_change'])) {

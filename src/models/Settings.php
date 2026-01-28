@@ -10,6 +10,7 @@ class Settings {
     private string $app_password;
     private string $date_format;
     public string $time_zone;
+    private string $expiry_days;
 
     public function __construct(
         string $lowstock_threshold,
@@ -19,7 +20,8 @@ class Settings {
         string $from_email,
         string $app_password,
         string $date_format = 'Y-m-d',
-        string $time_zone = 'UTC'
+        string $time_zone = 'UTC',
+        string $expiry_days = '10'
     ) {
         $this->lowstock_threshold = $lowstock_threshold;
         $this->header = $header;
@@ -29,6 +31,7 @@ class Settings {
         $this->app_password = $app_password;
         $this->date_format = $date_format;
         $this->time_zone = $time_zone;
+        $this->expiry_days = $expiry_days;
     }
 
     // Low stock threshold
@@ -92,5 +95,13 @@ class Settings {
     }
     public function setTimeZone(string $value): void {
         $this->time_zone = $value;
+    }
+
+    // Expiry Days
+    public function getExpiryDays(): string {
+        return $this->expiry_days;
+    }
+    public function setExpiryDays(string $value): void {
+        $this->expiry_days = $value;
     }
 }

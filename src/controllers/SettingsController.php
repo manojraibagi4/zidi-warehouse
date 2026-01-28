@@ -50,6 +50,7 @@ class SettingsController {
         $app_password = trim($_POST['app_password'] ?? '');
         $date_format = trim($_POST['date_format'] ?? 'Y-m-d');
         $time_zone = trim($_POST['time_zone'] ?? 'UTC');
+        $expiry_days = trim($_POST['expiry_days'] ?? '');
 
         // Validation
         $error = '';
@@ -63,6 +64,8 @@ class SettingsController {
             $error = lang("invalid_date_format") ?? "Invalid date format selected.";
         } elseif (!in_array($time_zone, DateTimeZone::listIdentifiers())) {
             $error = lang("invalid_time_zone") ?? "Invalid time zone selected.";
+        } elseif ($expiry_days === '' || !ctype_digit($expiry_days) || (int)$expiry_days < 1) {
+            $error = lang("invalid_expiry_days") ?? "Expiry days must be a positive number.";
         }
 
         if (!empty($error)) {
@@ -79,6 +82,7 @@ class SettingsController {
             $this->repo->updateSetting('from_email', $from_email);
             $this->repo->updateSetting('date_format', $date_format);
             $this->repo->updateSetting('time_zone', $time_zone);
+            $this->repo->updateSetting('expiry_days', $expiry_days);
 
             // Only update app password if a new value is provided
             if ($app_password !== '') {

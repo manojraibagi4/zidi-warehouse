@@ -24,12 +24,12 @@ if ($conn->connect_error) {
     die('Error connecting to the database. Please try again later.');
 }
 
-// Build WHERE clause with all fields
+// Build WHERE clause with all fields (removed 'expiration_year')
 $where = [];
 $params = [
-    'productname', 'category', 'article_no', 'manufacturer', 'size', 
-    'color', 'color_number', 'supplier', 'grafted', 'club', 
-    'expiration_year', 'last_edited_by'
+    'productname', 'category', 'article_no', 'manufacturer', 'size',
+    'color', 'color_number', 'supplier', 'grafted',
+    'expiry_date', 'last_edited_by'
 ];
 
 foreach ($params as $param) {
@@ -45,6 +45,16 @@ foreach ($params as $param) {
         } else {
             $where[] = "$param = '$value'";
         }
+    }
+}
+
+// Handle club filter (now supports multiple clubs)
+if (isset($_GET['club']) && !empty($_GET['club'])) {
+    $clubFilter = is_array($_GET['club']) ? $_GET['club'] : [$_GET['club']];
+    $clubIds = array_map('intval', $clubFilter);
+    if (!empty($clubIds)) {
+        $clubPlaceholders = implode(',', $clubIds);
+        $where[] = "items.id IN (SELECT item_id FROM item_clubs WHERE club_id IN ($clubPlaceholders))";
     }
 }
 
@@ -64,38 +74,39 @@ if (isset($_GET['expiry_date']) && trim($_GET['expiry_date']) !== '') {
 }
 
 $whereSQL = $where ? 'WHERE ' . implode(' AND ', $where) : '';
-$sql = "SELECT * FROM items $whereSQL";
+$sql = "SELECT items.* FROM items $whereSQL";
 
 $result = $conn->query($sql);
 if (!$result) {
     die('Error fetching data: ' . $conn->error);
 }
 
+// Helper function removed - clubs are now stored as comma-separated string in 'club' column
+
 // Create Spreadsheet
 $spreadsheet = new Spreadsheet();
 $sheet = $spreadsheet->getActiveSheet();
 $sheet->setTitle('Artikel');
 
-// Header row - German translations
+// Header row - German translations (removed 'Ablaufjahr')
 $headers = [
-    'ID', 
-    'Produktname', 
-    'Kategorie', 
-    'Artikelnummer', 
-    'Hersteller', 
-    'Beschreibung', 
-    'Größe', 
-    'Farbe', 
+    'ID',
+    'Produktname',
+    'Kategorie',
+    'Artikelnummer',
+    'Hersteller',
+    'Beschreibung',
+    'Größe',
+    'Farbe',
     'Farbnummer',
-    'Menge',  
-    'Stückpreis', 
-    'Gesamtpreis', 
-    'Lieferant', 
-    'Veredelt', 
-    'Verein', 
-    'Ablaufjahr', 
-    'Ablaufdatum', 
-    'Bild', 
+    'Menge',
+    'Stückpreis',
+    'Gesamtpreis',
+    'Lieferant',
+    'Veredelt',
+    'Verein',
+    'Ablaufdatum',
+    'Bild',
     'Letzte Änderung',
     'Zuletzt bearbeitet von',
     'MIME-Typ'
@@ -133,7 +144,10 @@ while ($item = $result->fetch_assoc()) {
 
     $graftedText = $item['grafted'] ? 'Ja' : 'Nein'; // German Yes/No
 
-    // All data in order
+    // Get clubs for this item (already comma-separated in database)
+    $clubsText = $item['club'] ?? '';
+
+    // All data in order (removed expiration_year)
     $data = [
         $item['id'],
         $item['productname'],
@@ -149,8 +163,7 @@ while ($item = $result->fetch_assoc()) {
         $item['total_price'],
         $item['supplier'],
         $graftedText,
-        $item['club'],
-        $item['expiration_year'],
+        $clubsText,  // Multiple clubs as comma-separated
         $formattedExpiryDate,
         !empty($item['img']) ? '[Bild]' : '', // German for Image
         $formattedLastChange,
@@ -169,7 +182,7 @@ while ($item = $result->fetch_assoc()) {
 
 $conn->close();
 
-// Output CSV headers
+// Output CSV headers for German Excel (semicolon delimiter)
 header('Content-Type: text/csv; charset=utf-8');
 header('Content-Disposition: attachment;filename="artikel_export.csv"');
 header('Cache-Control: max-age=0');
@@ -178,15 +191,19 @@ header('Pragma: public');
 header('Cache-Control: cache, must-revalidate');
 header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
 
-// Configure CSV writer
+// Output UTF-8 BOM for Excel recognition
+echo "\xEF\xBB\xBF";
+
+// Output separator hint for Excel
+echo "sep=;\n";
+
+// Configure CSV writer for German Excel
 $writer = new Csv($spreadsheet);
-$writer->setDelimiter(',');
+$writer->setDelimiter(';');  // ✅ CHANGED: Use semicolon for German Excel
 $writer->setEnclosure('"');
 $writer->setLineEnding("\r\n");
 $writer->setSheetIndex(0);
-
-// Set encoding for proper character support
-$writer->setUseBOM(true);
+$writer->setUseBOM(false);  // ✅ CHANGED: We already output BOM manually
 
 // Save output
 $writer->save('php://output');
