@@ -27,6 +27,12 @@ return [
     'export_data' => 'Export Data',
     'threshold' => 'Threshold',
     'items_low_in_stock' => 'Items Low in Stock',
+    'low_stock_filter' => 'Low Stock',
+    'expiry_days' => 'Expiry Days',
+    'expiry_days_help' => 'Number of days before expiration to show items as "track expiry"',
+    'track_expiry_filter' => 'Track Expiry',
+    'track_expiry' => 'Track Expiry',
+    'invalid_expiry_days' => 'Expiry days must be a positive number',
 
     'no_items_found_message' => 'There are no items matching your criteria. You can create a new item by clicking the button below.',
     'saved_filters' => 'Saved Filters',
@@ -295,8 +301,8 @@ return [
     'select_supplier' => 'Select Supplier',
 
     // Article Search & Quick Update
-    'search_by_article_number' => 'Search by Article Number',
-    'enter_article_number' => 'Enter Article Number...',
+    'search_by_article_number' => 'Search by Article Number or Product Name',
+    'enter_article_number' => 'Enter Article Number or Product Name...',
     'search' => 'Search',
     'searching' => 'Searching...',
     'found_items' => 'Found',
@@ -329,4 +335,9 @@ return [
     'unit_price' => 'Unit Price',
     'total_price' => 'Total Price',
     'expiry_date' => 'Expiry Date',
+
+    'duplicate' => 'Duplicate',
+    'will_not_be_copied' => 'will not be copied',
+    'item_duplicated_message' => 'Item data has been copied. You can now modify and save as a new item.',
+    'duplicated_image' => 'Duplicated image (will be uploaded with the new item)',
 ];

@@ -27,6 +27,12 @@ return [
      'export_data' => 'Daten exportieren',
      'threshold' => 'Schwellenwert',
      'items_low_in_stock' => 'Artikel mit geringem Lagerbestand',
+     'low_stock_filter' => 'Geringer Lagerbestand',
+     'expiry_days' => 'Ablauftage',
+     'expiry_days_help' => 'Anzahl der Tage vor Ablauf, um Artikel als "Ablauf verfolgen" anzuzeigen',
+     'track_expiry_filter' => 'Ablauf verfolgen',
+     'track_expiry' => 'Ablauf verfolgen',
+     'invalid_expiry_days' => 'Ablauftage muss eine positive Zahl sein',
 
      'no_items_found_message' => 'Es wurden keine Artikel gefunden, die Ihren Kriterien entsprechen. Sie können einen neuen Artikel erstellen, indem Sie auf die Schaltfläche unten klicken.',
     'saved_filters' => 'Gespeicherte Filter',
@@ -287,8 +293,8 @@ return [
     'select_supplier' => 'Lieferant auswählen',
 
     // Article Search & Quick Update
-    'search_by_article_number' => 'Suche nach Artikelnummer',
-    'enter_article_number' => 'Artikelnummer eingeben...',
+    'search_by_article_number' => 'Suche nach Artikelnummer oder Produktname',
+    'enter_article_number' => 'Geben Sie die Artikelnummer oder den Produktnamen ein...',
     'search' => 'Suchen',
     'searching' => 'Suche läuft...',
     'found_items' => 'Gefunden',
@@ -321,4 +327,9 @@ return [
     'unit_price' => 'Stückpreis',
     'total_price' => 'Gesamtpreis',
     'expiry_date' => 'Ablaufdatum',
+
+    'duplicate' => 'Duplizieren',
+    'will_not_be_copied' => 'wird nicht kopiert',
+    'item_duplicated_message' => 'Artikeldaten wurden kopiert. Sie können sie jetzt ändern und als neuen Artikel speichern.',
+    'duplicated_image' => 'Dupliziertes Bild (wird mit dem neuen Artikel hochgeladen)',
 ];

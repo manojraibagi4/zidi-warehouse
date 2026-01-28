@@ -32,6 +32,7 @@ class ItemRepository {
         $types = "";
 
         $threshold = $this->appConfig['low_stock_threshold'] ?? 10;
+        $expiry_days = $this->appConfig['expiry_days'] ?? 10;
 
         if (!empty($filters['productname'])) {
             $conditions[] = "productname LIKE ?";
@@ -94,13 +95,17 @@ class ItemRepository {
             $conditions[] = "quantity < $threshold";
         }
 
+        if (!empty($filters['trackexpiry'])) {
+            $conditions[] = "expiry_date IS NOT NULL AND expiry_date <= DATE_ADD(CURDATE(), INTERVAL $expiry_days DAY)";
+        }
+
         $sql = "SELECT * FROM items";
         if (!empty($conditions)) {
             $sql .= " WHERE " . implode(" AND ", $conditions);
         }
 
         // Sorting support
-        $allowedSorts = ['id', 'productname', 'manufacturer', 'size', 'color', 'quantity', 'grafted', 'club', 'expiration_year', 'last_change', 'image'];
+        $allowedSorts = ['id', 'productname', 'manufacturer', 'size', 'color', 'quantity', 'grafted', 'club', 'expiry_date', 'last_change', 'image'];
         $sort = $filters['sort'] ?? 'id';
         $order = strtoupper($filters['order'] ?? 'DESC');
 
@@ -140,6 +145,7 @@ class ItemRepository {
         $types = "";
 
         $threshold = $this->appConfig['low_stock_threshold'] ?? 10;
+        $expiry_days = $this->appConfig['expiry_days'] ?? 10;
 
         if (!empty($filters['productname'])) {
             $conditions[] = "productname LIKE ?";
@@ -200,6 +206,10 @@ class ItemRepository {
         
         if (!empty($filters['lowstock'])) {
             $conditions[] = "quantity < $threshold";
+        }
+
+        if (!empty($filters['trackexpiry'])) {
+            $conditions[] = "expiry_date IS NOT NULL AND expiry_date <= DATE_ADD(CURDATE(), INTERVAL $expiry_days DAY)";
         }
 
         $sql = "SELECT COUNT(*) as count FROM items";
@@ -309,8 +319,8 @@ class ItemRepository {
         $sql = "INSERT INTO items 
         (productname, category, article_no, manufacturer, description, size, color, 
         color_number, unit_price, total_price, supplier, quantity, grafted, club, 
-        expiration_year, expiry_date, img, mime_type, last_edited_by, last_change) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        expiry_date, img, mime_type, last_edited_by, last_change) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
@@ -327,8 +337,8 @@ class ItemRepository {
 
         error_log("DEBUG store(): grafted = " . $item->grafted . ", club = " . ($item->club ?? 'NULL'));
         
-        // Define the types string for the 19 parameters 
-        $types = "ssssssssddsiisssbsss"; // 19 parameters (no last_change, no id)
+        // Define the types string for the 19 parameters (removed expiration_year)
+        $types = "ssssssssddssissbsss"; // 19 parameters
         
         // FIX: Use an empty string '' as a placeholder for the BLOB data
         $image_placeholder = ($item->img !== null && $item->img !== '') ? '' : null;
@@ -350,7 +360,7 @@ class ItemRepository {
             $item->description, $item->size, $item->color, $color_number_value, 
             $unit_price_value, $total_price_value, $supplier_value, 
             $item->quantity, $grafted, $item->club, 
-            $item->expiration_year, $expiry_date_value, 
+            $expiry_date_value, // removed expiration_year
             $image_placeholder, // <-- Placeholder for 'img'
             $mime_type_value, $item->last_edited_by, $last_change_value
         )) {
@@ -362,7 +372,7 @@ class ItemRepository {
         // The send_long_data call - EXACTLY like update method
         if ($item->img !== null && $item->img !== '') { 
             error_log("DEBUG: Creating with new image. Size: " . strlen($item->img) . " bytes");
-            $stmt->send_long_data(16, $item->img); // Parameter index 16 (0-based)
+            $stmt->send_long_data(15, $item->img); // Parameter index 15 (0-based) - adjusted from 16
         } else {
             error_log("DEBUG: No image data for create"); 
         }
@@ -382,7 +392,7 @@ class ItemRepository {
     // src/models/ItemRepository.php
 
     public function update(Item $item): bool {
-        $sql = "UPDATE items SET productname=?, category=?, article_no=?, manufacturer=?, description=?, size=?, color=?, color_number=?, unit_price=?, total_price=?, supplier=?, quantity=?, grafted=?, club=?, expiration_year=?, expiry_date=?, img=?, mime_type=?, last_change=?, last_edited_by=? WHERE id=?";
+        $sql = "UPDATE items SET productname=?, category=?, article_no=?, manufacturer=?, description=?, size=?, color=?, color_number=?, unit_price=?, total_price=?, supplier=?, quantity=?, grafted=?, club=?, expiry_date=?, img=?, mime_type=?, last_change=?, last_edited_by=? WHERE id=?";
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
             error_log("ERROR: MySQLi prepare failed in update: " . $this->conn->error);
@@ -392,8 +402,8 @@ class ItemRepository {
         $grafted = (int)$item->grafted;
         $club_value = ($item->grafted === 1 && !empty($item->club)) ? $item->club : null;
         
-        // Define the types string for the 21 parameters 
-        $types = "ssssssssddsiisssbsssi"; // Example type string (20 columns + 1 integer for 'id')
+        // Define the types string for the 20 parameters (removed expiration_year)
+        $types = "ssssssssddssissbsssi"; // 19 columns + 1 integer for 'id'
         
         // FIX: Use an empty string '' as a placeholder for the BLOB data
         $image_placeholder = ($item->img !== null && $item->img !== '') ? '' : null;
@@ -414,7 +424,7 @@ class ItemRepository {
             $item->description, $item->size, $item->color, $color_number_value, 
             $unit_price_value, $total_price_value, $supplier_value, 
             $item->quantity, $grafted, $club_value, 
-            $item->expiration_year, $expiry_date_value, 
+            $expiry_date_value, // removed expiration_year
             $image_placeholder, // <-- CORRECTED: Placeholder for 'img'
             $mime_type_value, $item->last_change, $item->last_edited_by,
             $item->id // WHERE clause parameter
@@ -427,7 +437,7 @@ class ItemRepository {
         // The send_long_data call (already in your code)
         if ($item->img !== null && $item->img !== '') { 
             error_log("DEBUG: Updating with new image. Size: " . strlen($item->img) . " bytes");
-            $stmt->send_long_data(16, $item->img); // Parameter index 16 (0-based)
+            $stmt->send_long_data(15, $item->img); // Parameter index 15 (0-based) - adjusted from 16
         } else {
             error_log("DEBUG: No new image data for update (keeping existing image)"); 
         }
@@ -592,7 +602,7 @@ class ItemRepository {
     public function findByArticleNumber(string $articleNo): array {
         $sql = "SELECT id, productname, article_no, manufacturer, description, size, color, 
                 color_number, category, quantity, unit_price, total_price, supplier, 
-                grafted, club, expiration_year, expiry_date, last_change, last_edited_by 
+                grafted, club, expiry_date, last_change, last_edited_by 
                 FROM items 
                 WHERE article_no = ? 
                 ORDER BY productname ASC";
@@ -616,6 +626,52 @@ class ItemRepository {
         $stmt->close();
         $result->free();
         
+        return $items;
+    }
+
+    /**
+     * Unified search for items by article number OR product name
+     * Uses LIKE matching for flexible partial matching on both fields
+     * Results are intelligently ordered: exact matches first, then partial matches
+     *
+     * @param string $searchTerm The search term to match against article_no or productname
+     * @return array An array of items matching the search criteria
+     */
+    public function searchUnified(string $searchTerm): array {
+        $sql = "SELECT id, productname, article_no, manufacturer, description, size, color,
+                color_number, category, quantity, unit_price, total_price, supplier,
+                grafted, club, expiry_date, last_change, last_edited_by
+                FROM items
+                WHERE article_no LIKE ? OR productname LIKE ?
+                ORDER BY
+                    CASE
+                        WHEN article_no = ? THEN 1
+                        WHEN productname = ? THEN 2
+                        WHEN article_no LIKE ? THEN 3
+                        ELSE 4
+                    END,
+                    productname ASC";
+
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            error_log("ERROR: MySQLi prepare failed in searchUnified: " . $this->conn->error);
+            return [];
+        }
+
+        $likePattern = "%" . $searchTerm . "%";
+        $stmt->bind_param("sssss", $likePattern, $likePattern, $searchTerm, $searchTerm, $likePattern);
+
+        if (!$stmt->execute()) {
+            error_log("ERROR: MySQLi execute failed in searchUnified: " . $stmt->error);
+            $stmt->close();
+            return [];
+        }
+
+        $result = $stmt->get_result();
+        $items = $result->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+        $result->free();
+
         return $items;
     }
 
@@ -653,7 +709,6 @@ class ItemRepository {
             return false;
         }
     }
-
 
 
 

@@ -12,13 +12,13 @@ $color = htmlspecialchars($item->color ?? '');
 $quantity = htmlspecialchars($item->quantity ?? 1);
 $grafted_checked = ($item->grafted ?? 0) ? 'checked' : '';
 $club = htmlspecialchars($item->club ?? '');
-$expiration_year = htmlspecialchars($item->expiration_year ?? (date('Y') + 5));
+
 $item_id = htmlspecialchars($item->id ?? '');
 
 // This part of the image logic seems a bit off, it's better to store the image as a file path.
 // The base64 encoding is more for small, inline images. Assuming your database stores binary data,
 // your logic for fetching it seems correct, but it's not a common pattern.
-$current_image = '/img/default-placeholder.png';
+$current_image = '/public/img/default-placeholder.png';
 if ($is_editing && !empty($item->img)) {
     $mime_type = $item->mime_type ?? 'image/png';
     $base64 = base64_encode($item->img);
@@ -211,7 +211,7 @@ $suppliers = $settingsRepo->getSuppliers();
                             </div>
                         </div>
 
-                        <!-- Supplier & Expiration Year -->
+                        <!-- Supplier -->
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="supplier" class="form-label">
@@ -239,12 +239,7 @@ $suppliers = $settingsRepo->getSuppliers();
                                 </div>
                             </div>
 
-                            <div class="col-md-6">
-                                <label for="expiration_year" class="form-label">
-                                    <i class="bi bi-calendar me-2"></i><?= lang('expiration_year') ?> <span class="text-danger"></span>
-                                </label>
-                                <input type="number" class="form-control" id="expiration_year" name="expiration_year" value="<?= $expiration_year ?>">
-                            </div>
+                            
                         </div>
 
                         <!-- Grafted Checkbox -->
@@ -307,6 +302,11 @@ $suppliers = $settingsRepo->getSuppliers();
                                 <a href="/list" class="btn btn-secondary btn-lg me-2">
                                     <i class="bi bi-x-circle me-2"></i><?= lang('cancel') ?>
                                 </a>
+                                <?php if ($is_editing): ?>
+                                    <button type="button" id="duplicateBtn" class="btn btn-info btn-lg me-2">
+                                        <i class="bi bi-files me-2"></i><?= lang('duplicate') ?>
+                                    </button>
+                                <?php endif; ?>
                                 <button type="submit" id="itemSubmitBtn" class="btn btn-<?= $is_editing ? 'primary' : 'success' ?> btn-lg">
                                     <i class="bi bi-floppy me-2"></i><?= $is_editing ? lang('update_item') : lang('add_item') ?>
                                 </button>
@@ -327,10 +327,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('itemForm');
     const responseMessageContainer = document.getElementById('response-message');
     const submitButton = document.getElementById('itemSubmitBtn');
+    const duplicateButton = document.getElementById('duplicateBtn');
     const imgInput = document.getElementById('img');
     const imagePreview = document.getElementById('currentImage');
     const imagePreviewText = document.getElementById('imagePreviewText');
-    const defaultPlaceholder = '/img/default-placeholder.png';
+    const defaultPlaceholder = '/public/img/default-placeholder.png';
     const quantityInput = document.getElementById('quantity');
     const unitPriceInput = document.getElementById('unit_price');
     const totalPriceInput = document.getElementById('total_price');
@@ -356,6 +357,103 @@ document.addEventListener('DOMContentLoaded', function() {
             clubInput.value = ''; // Clear the club value when unchecked
         }
     });
+
+    // Duplicate button functionality
+    if (duplicateButton) {
+        duplicateButton.addEventListener('click', async function() {
+            // Gather all current form values
+            const formData = {
+                productname: document.getElementById('productname').value,
+                manufacturer: document.getElementById('manufacturer').value,
+                description: document.getElementById('description').value,
+                quantity: document.getElementById('quantity').value,
+                unit_price: document.getElementById('unit_price').value,
+                total_price: document.getElementById('total_price').value,
+                size: document.getElementById('size').value,
+                color: document.getElementById('color').value,
+                category: document.getElementById('category').value,
+                article_no: document.getElementById('article_no').value,
+                color_number: document.getElementById('color_number').value,
+                expiry_date: document.getElementById('expiry_date').value,
+                supplier: document.getElementById('supplier').value,
+                grafted: graftedCheckbox.checked ? '1' : '0',
+                club: document.getElementById('club').value,
+                current_image: imagePreview.src !== defaultPlaceholder ? imagePreview.src : null
+            };
+
+            // Store in sessionStorage
+            sessionStorage.setItem('duplicateItemData', JSON.stringify(formData));
+            
+            // Redirect to create page
+            window.location.href = '/create';
+        });
+    }
+
+    // Check if we're duplicating an item
+    const duplicateData = sessionStorage.getItem('duplicateItemData');
+    if (duplicateData && !<?= json_encode($is_editing) ?>) {
+        const data = JSON.parse(duplicateData);
+        
+        // Populate all fields
+        document.getElementById('productname').value = data.productname + ' (Copy)';
+        document.getElementById('manufacturer').value = data.manufacturer;
+        document.getElementById('description').value = data.description;
+        document.getElementById('quantity').value = data.quantity;
+        document.getElementById('unit_price').value = data.unit_price;
+        document.getElementById('total_price').value = data.total_price;
+        document.getElementById('size').value = data.size;
+        document.getElementById('color').value = data.color;
+        document.getElementById('category').value = data.category;
+        document.getElementById('article_no').value = data.article_no;
+        document.getElementById('color_number').value = data.color_number;
+        document.getElementById('expiry_date').value = data.expiry_date;
+        document.getElementById('supplier').value = data.supplier;
+        
+        // Handle grafted checkbox and club field
+        if (data.grafted === '1') {
+            graftedCheckbox.checked = true;
+            clubField.style.display = 'block';
+            document.getElementById('club').value = data.club;
+        }
+        
+        // Handle image duplication
+        if (data.current_image && data.current_image !== defaultPlaceholder) {
+            imagePreview.src = data.current_image;
+            imagePreviewText.textContent = '<?= lang('duplicated_image') ?>';
+            
+            // Convert base64 to File object and attach to file input
+            convertBase64ToFile(data.current_image, 'duplicated-image.png').then(file => {
+                // Create a DataTransfer object to set the file input
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                imgInput.files = dataTransfer.files;
+            }).catch(err => {
+                console.error('Error converting image:', err);
+                imagePreview.src = defaultPlaceholder;
+                imagePreviewText.textContent = '<?= lang('no_image_selected') ?>';
+            });
+        } else {
+            imagePreview.src = defaultPlaceholder;
+            imagePreviewText.textContent = '<?= lang('no_image_selected') ?>';
+        }
+        
+        // Clear sessionStorage
+        sessionStorage.removeItem('duplicateItemData');
+        
+        // Show success message
+        showMessage('<?= lang('item_duplicated_message') ?>', 'info');
+    }
+
+    // Helper function to convert base64 to File object
+    async function convertBase64ToFile(base64String, filename) {
+        // Fetch the base64 string as a blob
+        const response = await fetch(base64String);
+        const blob = await response.blob();
+        
+        // Create a File object from the blob
+        const file = new File([blob], filename, { type: blob.type });
+        return file;
+    }
 
     // Image preview
     imgInput.addEventListener('change', function(event) {

@@ -12,21 +12,31 @@ ini_set('max_execution_time', '120');
 require_once __DIR__ . '/../../vendor/autoload.php';
 require_once __DIR__ . '/../config/database.php';
 
-use TCPDF;
+// Log that we've reached the PDF export
+error_log("PDF Export: Starting generation at " . date('Y-m-d H:i:s'));
 
+// Ensure absolutely no output before this point
 ob_start();
 
 try {
-    $conn = connectDB(); 
-    if ($conn->connect_error) {
-        throw new Exception("Database connection failed: " . $conn->connect_error);
+    // Use existing connection if available, otherwise create new one
+    if (isset($GLOBALS['conn']) && $GLOBALS['conn'] instanceof mysqli) {
+        $conn = $GLOBALS['conn'];
+    } else {
+        $conn = connectDB(); 
+        if ($conn->connect_error) {
+            throw new Exception("Database connection failed: " . $conn->connect_error);
+        }
     }
+    
+    // Add timeout protection
+    set_time_limit(180); // 3 minutes max
 
-    // Filters - all fields
+    // Filters - all fields (removed expiration_year)
     $filters = [
         'productname', 'category', 'article_no', 'manufacturer', 'size', 
         'color', 'color_number', 'supplier', 'grafted', 'club', 
-        'expiration_year', 'last_edited_by'
+        'last_edited_by'
     ];
     $whereConditions = [];
     $params = [];
@@ -92,28 +102,27 @@ try {
     $pdf->Cell(0, 8, 'Generated on: ' . date('Y-m-d H:i:s'), 0, 1, 'C');
     $pdf->Ln(3);
 
-    // Headers - All fields with adjusted widths
+    // Headers - 20 columns (removed Exp Year)
     $headers = [
         ['label' => 'ID', 'w' => 8],
-        ['label' => 'Product', 'w' => 20],
-        ['label' => 'Category', 'w' => 15],
-        ['label' => 'Article No', 'w' => 15],
-        ['label' => 'Manufacturer', 'w' => 18],
-        ['label' => 'Description', 'w' => 25],
-        ['label' => 'Size', 'w' => 10],
-        ['label' => 'Color', 'w' => 12],
-        ['label' => 'Color No', 'w' => 12],
-        ['label' => 'Unit Price', 'w' => 12],
-        ['label' => 'Total Price', 'w' => 12],
-        ['label' => 'Supplier', 'w' => 15],
-        ['label' => 'Qty', 'w' => 8],
-        ['label' => 'Grafted', 'w' => 10],
-        ['label' => 'Club', 'w' => 12],
-        ['label' => 'Exp Year', 'w' => 10],
-        ['label' => 'Exp Date', 'w' => 12],
-        ['label' => 'Last Edited By', 'w' => 15],
-        ['label' => 'Last Change', 'w' => 18],
-        ['label' => 'Mime Type', 'w' => 15],
+        ['label' => 'Product', 'w' => 22],
+        ['label' => 'Category', 'w' => 16],
+        ['label' => 'Article No', 'w' => 16],
+        ['label' => 'Manufacturer', 'w' => 20],
+        ['label' => 'Description', 'w' => 28],
+        ['label' => 'Size', 'w' => 12],
+        ['label' => 'Color', 'w' => 14],
+        ['label' => 'Color No', 'w' => 14],
+        ['label' => 'Unit Price', 'w' => 14],
+        ['label' => 'Total Price', 'w' => 14],
+        ['label' => 'Supplier', 'w' => 16],
+        ['label' => 'Qty', 'w' => 10],
+        ['label' => 'Grafted', 'w' => 12],
+        ['label' => 'Club', 'w' => 14],
+        ['label' => 'Exp Date', 'w' => 14],
+        ['label' => 'Last Edited By', 'w' => 16],
+        ['label' => 'Last Change', 'w' => 20],
+        ['label' => 'Mime Type', 'w' => 16],
         ['label' => 'Image', 'w' => 20]
     ];
 
@@ -188,7 +197,15 @@ try {
     $fixedRowHeight = 15; // mm - consistent height for all rows
 
     // Loop through results
+    $rowCount = 0;
     while ($row = $result->fetch_assoc()) {
+        $rowCount++;
+        
+        // Log progress every 10 rows (optional - remove in production)
+        if ($rowCount % 10 === 0) {
+            error_log("PDF: Processing row $rowCount");
+        }
+        
         // Check if we need a new page
         if ($pdf->GetY() + $fixedRowHeight > ($pdf->getPageHeight() - $pdf->getBreakMargin())) {
             $pdf->AddPage();
@@ -226,7 +243,7 @@ try {
         $unitPrice = !empty($row['unit_price']) ? number_format($row['unit_price'], 2) : '';
         $totalPrice = !empty($row['total_price']) ? number_format($row['total_price'], 2) : '';
 
-        // Prepare all cell data
+        // Prepare all cell data - 20 cells (removed expiration_year)
         $cellData = [
             ['text' => $row['id'], 'align' => 'C'],
             ['text' => $row['productname'], 'align' => 'L'],
@@ -243,23 +260,23 @@ try {
             ['text' => $row['quantity'], 'align' => 'C'],
             ['text' => ($row['grafted'] ? 'Yes' : 'No'), 'align' => 'C'],
             ['text' => $row['club'], 'align' => 'L'],
-            ['text' => $row['expiration_year'], 'align' => 'C'],
             ['text' => $formattedExpiryDate, 'align' => 'C'],
             ['text' => $row['last_edited_by'] ?? '', 'align' => 'L'],
             ['text' => $formattedLastChange, 'align' => 'C'],
             ['text' => $row['mime_type'] ?? '', 'align' => 'L'],
-            ['text' => '', 'align' => 'C', 'image' => $row['img']] // image data
+            ['text' => '', 'align' => 'C', 'image' => $row['img']]
         ];
 
         // Draw all cells in the row
-        $pdf->SetY($currentY);
-        $pdf->SetX($currentX);
-
         foreach ($headers as $i => $header) {
             $cellWidth = $header['w'];
             $align = $cellData[$i]['align'];
             
-            if ($i === 20 && !empty($cellData[$i]['image'])) {
+            // Save position
+            $x = $pdf->GetX();
+            $y = $pdf->GetY();
+            
+            if ($i === 19 && !empty($cellData[$i]['image'])) {
                 // Image cell - draw border first
                 $pdf->Cell($cellWidth, $fixedRowHeight, '', 1, 0, 'C');
                 
@@ -272,8 +289,8 @@ try {
                         file_put_contents($tmpFile, $imageInfo['data']);
                         
                         // Calculate centered position
-                        $imageX = $currentX + ($cellWidth - $imageInfo['width']) / 2;
-                        $imageY = $currentY + ($fixedRowHeight - $imageInfo['height']) / 2;
+                        $imageX = $x + ($cellWidth - $imageInfo['width']) / 2;
+                        $imageY = $y + ($fixedRowHeight - $imageInfo['height']) / 2;
                         
                         $pdf->Image($tmpFile, $imageX, $imageY, $imageInfo['width'], $imageInfo['height'], $ext, '', 'N', false, 300, '', false, false, 0, false, false, false);
                         
@@ -281,53 +298,40 @@ try {
                     }
                 }
             } else {
-                // Text cell - use MultiCell for text wrapping but fixed height
-                $text = $cellData[$i]['text'];
+                // Text cell
+                $text = (string)$cellData[$i]['text'];
                 
-                // Save current position
-                $x = $pdf->GetX();
-                $y = $pdf->GetY();
-                
-                // Draw cell border
-                $pdf->Cell($cellWidth, $fixedRowHeight, '', 1, 0, $align);
-                
-                // Add text - calculate position for centered alignment
-                $pdf->SetXY($x, $y);
-                
-                if ($align === 'C') {
-                    // For center alignment, we need to calculate text position
-                    $pdf->SetX($x);
-                    $textWidth = $pdf->GetStringWidth($text);
-                    if ($textWidth < $cellWidth) {
-                        $pdf->SetX($x + ($cellWidth - $textWidth) / 2);
-                    }
-                    $pdf->Cell($cellWidth, $fixedRowHeight, $text, 0, 0, $align);
-                } else {
-                    // For left alignment, use MultiCell with fixed height
-                    $pdf->MultiCell($cellWidth, 3, $text, 0, $align, false, 1, $x, $y, true, 0, false, false, $fixedRowHeight, 'T');
-                }
-                
-                // Reset position for next cell
-                $pdf->SetXY($x + $cellWidth, $y);
+                // Draw cell with text in one call
+                $pdf->Cell($cellWidth, $fixedRowHeight, $text, 1, 0, $align);
             }
-            
-            $currentX += $cellWidth;
         }
 
         // Move to next row
-        $pdf->SetY($currentY + $fixedRowHeight);
-        $pdf->SetX(8); // Reset to left margin
+        $pdf->Ln($fixedRowHeight);
     }
 
     $stmt->close();
-    $conn->close();
+    
+    // Don't close connection if it's shared from index.php
+    if (!isset($GLOBALS['conn']) || $GLOBALS['conn'] !== $conn) {
+        $conn->close();
+    }
 
+    // Clean buffer and output PDF
     ob_end_clean();
-    $pdf->Output('items_complete_export_' . date('Y-m-d') . '.pdf', 'D');
+    $pdf->Output('items_complete_export_' . date('Y-m-d H:i:s') . '.pdf', 'D');
     exit;
 
 } catch (Exception $e) {
+    // Clean any output
     ob_end_clean();
+    
+    // Log the error
+    error_log("PDF Generation Error: " . $e->getMessage());
+    error_log("Stack trace: " . $e->getTraceAsString());
+    
+    // Send error response
     header('Content-Type: text/plain');
-    die("PDF Generation Error: " . $e->getMessage());
+    http_response_code(500);
+    die("PDF Generation Error: " . $e->getMessage() . "\n\nPlease check server logs for details.");
 }

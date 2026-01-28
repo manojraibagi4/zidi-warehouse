@@ -41,7 +41,10 @@ return array_merge($config, [
     'header'              => $dbSettings['header'] ?? 'ZIDI Warehouse System',
     'footer'              => $dbSettings['footer'] ?? 'ZIDI Warehouse System',
     'default_language'    => $dbSettings['default_lang'] ?? 'en',
-    'low_stock_threshold' => isset($dbSettings['lowstock_threshold']) 
-                                ? (int)$dbSettings['lowstock_threshold'] 
+    'low_stock_threshold' => isset($dbSettings['lowstock_threshold'])
+                                ? (int)$dbSettings['lowstock_threshold']
+                                : 10,
+    'expiry_days'         => isset($dbSettings['expiry_days'])
+                                ? (int)$dbSettings['expiry_days']
                                 : 10,
 ]);
