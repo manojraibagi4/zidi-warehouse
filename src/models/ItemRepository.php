@@ -105,7 +105,7 @@ class ItemRepository {
         }
 
         // Sorting support
-        $allowedSorts = ['id', 'productname', 'manufacturer', 'size', 'color', 'quantity', 'grafted', 'club', 'expiry_date', 'last_change', 'image'];
+        $allowedSorts = ['id', 'productname', 'category', 'manufacturer', 'size', 'color', 'quantity', 'grafted', 'club', 'expiry_date', 'last_change', 'image'];
         $sort = $filters['sort'] ?? 'id';
         $order = strtoupper($filters['order'] ?? 'DESC');
 

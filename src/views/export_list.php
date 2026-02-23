@@ -267,6 +267,7 @@ function h($value) {
                         <th scope="col"><?= Helper::renderSortHeader('productname', lang('product_name') ?? 'Product Name', $filters ?? []) ?></th>
                         <th scope="col"><?= Helper::renderSortHeader('article_no', lang('article_no') ?? 'Article No', $filters ?? []) ?></th>
                         <th scope="col"><?= Helper::renderSortHeader('manufacturer', lang('manufacturer') ?? 'Manufacturer', $filters ?? []) ?></th>
+                        <th scope="col"><?= Helper::renderSortHeader('category', lang('category') ?? 'Category', $filters ?? []) ?></th>
                         <th scope="col"><?= Helper::renderSortHeader('size', lang('size') ?? 'Size', $filters ?? []) ?></th>
                         <th scope="col"><?= Helper::renderSortHeader('color', lang('color') ?? 'Color', $filters ?? []) ?></th>
                         <th scope="col"><?= Helper::renderSortHeader('quantity', lang('quantity') ?? 'Quantity', $filters ?? []) ?></th>
@@ -304,6 +305,7 @@ function h($value) {
                             <td><?= h($item['productname'] ?? '') ?></td>
                             <td><?= h($item['article_no'] ?? '') ?></td>
                             <td><?= h($item['manufacturer'] ?? '') ?></td>
+                            <td><?= h($item['category'] ?? '') ?></td>
                             <td><?= h($item['size'] ?? '') ?></td>
                             <td><?= h($item['color'] ?? '') ?></td>
                             <td><?= h($item['quantity'] ?? '') ?></td>

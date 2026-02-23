@@ -754,8 +754,23 @@ class ItemController {
             echo json_encode($response);
             exit();
         } else {
-            // Redirection should happen after setting the session message, which is already done in the try-catch.
-            header("Location: /list");
+            // Build redirect URL with preserved filters
+            $redirectParams = [];
+            foreach ($_POST as $key => $value) {
+                if (strpos($key, 'filter_') === 0) {
+                    $filterName = substr($key, 7); // Remove 'filter_' prefix
+                    if (!empty($value)) {
+                        $redirectParams[$filterName] = $value;
+                    }
+                }
+            }
+
+            $redirectUrl = '/list';
+            if (!empty($redirectParams)) {
+                $redirectUrl .= '?' . http_build_query($redirectParams);
+            }
+
+            header("Location: " . $redirectUrl);
             exit();
         }
     }

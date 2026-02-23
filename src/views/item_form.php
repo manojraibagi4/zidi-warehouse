@@ -75,8 +75,8 @@ $suppliers = $settingsRepo->getSuppliers();
                                 <div class="mt-1">
                                     <small class="text-muted">
                                         <i class="bi bi-info-circle me-1"></i>
-                                        <?= lang('cant_find_manufacturer') ?> 
-                                        <a href="/settings#product-settings" target="_blank" class="text-primary">
+                                        <?= lang('cant_find_manufacturer') ?>
+                                        <a href="/settings#product-settings-manufacturer" target="_blank" class="text-primary">
                                             <?= lang('add_in_settings') ?>
                                         </a>
                                     </small>
@@ -139,8 +139,8 @@ $suppliers = $settingsRepo->getSuppliers();
                                 <div class="mt-1">
                                     <small class="text-muted">
                                         <i class="bi bi-info-circle me-1"></i>
-                                        <?= lang('cant_find_size') ?> 
-                                        <a href="/settings#product-settings" target="_blank" class="text-primary">
+                                        <?= lang('cant_find_size') ?>
+                                        <a href="/settings#product-settings-size" target="_blank" class="text-primary">
                                             <?= lang('add_in_settings') ?>
                                         </a>
                                     </small>
@@ -175,8 +175,8 @@ $suppliers = $settingsRepo->getSuppliers();
                                 <div class="mt-1">
                                     <small class="text-muted">
                                         <i class="bi bi-info-circle me-1"></i>
-                                        <?= lang('cant_find_category') ?> 
-                                        <a href="/settings#product-settings" target="_blank" class="text-primary">
+                                        <?= lang('cant_find_category') ?>
+                                        <a href="/settings#product-settings-category" target="_blank" class="text-primary">
                                             <?= lang('add_in_settings') ?>
                                         </a>
                                     </small>
@@ -231,8 +231,8 @@ $suppliers = $settingsRepo->getSuppliers();
                                 <div class="mt-1">
                                     <small class="text-muted">
                                         <i class="bi bi-info-circle me-1"></i>
-                                        <?= lang('cant_find_supplier') ?> 
-                                        <a href="/settings#product-settings" target="_blank" class="text-primary">
+                                        <?= lang('cant_find_supplier') ?>
+                                        <a href="/settings#product-settings-supplier" target="_blank" class="text-primary">
                                             <?= lang('add_in_settings') ?>
                                         </a>
                                     </small>
@@ -445,14 +445,43 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Helper function to convert base64 to File object
-    async function convertBase64ToFile(base64String, filename) {
-        // Fetch the base64 string as a blob
-        const response = await fetch(base64String);
-        const blob = await response.blob();
+    // async function convertBase64ToFile(base64String, filename) {
+    //     // Fetch the base64 string as a blob
+    //     const response = await fetch(base64String);
+    //     const blob = await response.blob();
         
-        // Create a File object from the blob
-        const file = new File([blob], filename, { type: blob.type });
-        return file;
+    //     // Create a File object from the blob
+    //     const file = new File([blob], filename, { type: blob.type });
+    //     return file;
+    // }
+
+    async function convertBase64ToFile(base64String, filename) {
+        // Extract the mime type and base64 data
+        const matches = base64String.match(/^data:([^;]+);base64,(.+)$/);
+        if (!matches) {
+            throw new Error('Invalid base64 string');
+        }
+        
+        const mimeType = matches[1];
+        const base64Data = matches[2];
+        
+        // Decode base64 to binary using atob (no fetch needed, no CSP issue)
+        const byteCharacters = atob(base64Data);
+        const byteArrays = [];
+        
+        const sliceSize = 512;
+        for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+            const slice = byteCharacters.slice(offset, offset + sliceSize);
+            const byteNumbers = new Array(slice.length);
+            for (let i = 0; i < slice.length; i++) {
+                byteNumbers[i] = slice.charCodeAt(i);
+            }
+            byteArrays.push(new Uint8Array(byteNumbers));
+        }
+        
+        const blob = new Blob(byteArrays, { type: mimeType });
+        const extension = mimeType.split('/')[1] || 'png';
+        return new File([blob], `${filename}.${extension}`, { type: mimeType });
     }
 
     // Image preview

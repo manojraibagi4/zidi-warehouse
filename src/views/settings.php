@@ -473,6 +473,103 @@ require_once __DIR__ . '/../../includes/lang.php';
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    // Handle hash-based tab and section navigation
+    const hash = window.location.hash.slice(1); // Remove the # symbol
+    if (hash) {
+        // Check if it's a product settings section link
+        if (hash.startsWith('product-settings-')) {
+            // Extract the section name (manufacturer, size, category, supplier)
+            const section = hash.replace('product-settings-', '');
+
+            // First, activate the Product Settings tab
+            const tabButton = document.getElementById('product-settings-tab');
+            if (tabButton) {
+                // Deactivate the default active tab
+                const activeTab = document.querySelector('#settingsTabs .nav-link.active');
+                const activePane = document.querySelector('.tab-pane.show.active');
+
+                if (activeTab) {
+                    activeTab.classList.remove('active');
+                    activeTab.setAttribute('aria-selected', 'false');
+                }
+                if (activePane) {
+                    activePane.classList.remove('show', 'active');
+                }
+
+                // Activate Product Settings tab
+                const tab = new bootstrap.Tab(tabButton);
+                tab.show();
+            }
+
+            // Map section names to collapse IDs
+            const sectionMap = {
+                'manufacturer': 'manufacturersCollapse',
+                'size': 'sizesCollapse',
+                'category': 'categoriesCollapse',
+                'supplier': 'suppliersCollapse',
+                'club': 'clubsCollapse'
+            };
+
+            const collapseId = sectionMap[section];
+            if (collapseId) {
+                // Wait for tab transition to complete
+                setTimeout(() => {
+                    const collapseElement = document.getElementById(collapseId);
+                    if (collapseElement) {
+                        // Check if section is already expanded
+                        const isAlreadyExpanded = collapseElement.classList.contains('show');
+
+                        if (!isAlreadyExpanded) {
+                            // Expand the section using Bootstrap Collapse API
+                            const bsCollapse = new bootstrap.Collapse(collapseElement, {
+                                show: true
+                            });
+
+                            // Scroll to the section after expansion animation
+                            setTimeout(() => {
+                                collapseElement.scrollIntoView({
+                                    behavior: 'smooth',
+                                    block: 'start'
+                                });
+                            }, 350); // Wait for collapse animation
+                        } else {
+                            // Already expanded, just scroll to it
+                            collapseElement.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        }
+                    }
+                }, 200); // Wait for tab switch animation
+            }
+        } else {
+            // Handle regular tab navigation (app-settings, database-settings)
+            const validTabs = ['app-settings', 'product-settings', 'database-settings'];
+
+            if (validTabs.includes(hash)) {
+                const tabButton = document.getElementById(hash + '-tab');
+
+                if (tabButton) {
+                    // Deactivate the default active tab
+                    const activeTab = document.querySelector('#settingsTabs .nav-link.active');
+                    const activePane = document.querySelector('.tab-pane.show.active');
+
+                    if (activeTab) {
+                        activeTab.classList.remove('active');
+                        activeTab.setAttribute('aria-selected', 'false');
+                    }
+                    if (activePane) {
+                        activePane.classList.remove('show', 'active');
+                    }
+
+                    // Activate the target tab
+                    const tab = new bootstrap.Tab(tabButton);
+                    tab.show();
+                }
+            }
+        }
+    }
+
     const settingsForm = document.getElementById('settings_form');
     const saveBtn = document.getElementById('save_settings_btn');
     const backupBtn = document.getElementById('backup_db_btn');
