@@ -193,17 +193,22 @@ require_once __DIR__ . '/../../includes/lang.php';
                                     </h5>
                                     <i class="bi bi-chevron-down toggle-icon"></i>
                                 </div>
-                                <div id="sizesCollapse" class="collapse show">
+                                <div id="sizesCollapse" class="collapse">
                                     <div class="card-body">
                                         <form id="size_form" class="mb-4">
                                             <input type="hidden" name="size_id" id="size_id" value="">
                                             <div class="row g-3 align-items-end">
-                                                <div class="col-md-6">
+                                                <div class="col-md-5">
                                                     <label for="size_name" class="form-label"><?= lang('size_name') ?></label>
-                                                    <input type="text" id="size_name" name="size_name" 
+                                                    <input type="text" id="size_name" name="size_name"
                                                            class="form-control" required>
                                                 </div>
-                                                <div class="col-md-6">
+                                                <div class="col-md-3">
+                                                    <label for="display_order" class="form-label"><?= lang('display_order') ?></label>
+                                                    <input type="number" id="display_order" name="display_order"
+                                                           class="form-control" min="1" value="1" required>
+                                                </div>
+                                                <div class="col-md-4">
                                                     <button type="submit" class="btn btn-success" id="add_size_btn">
                                                         <i class="bi bi-plus-circle me-2"></i><?= lang('add_size') ?>
                                                     </button>
@@ -219,6 +224,7 @@ require_once __DIR__ . '/../../includes/lang.php';
                                                 <thead>
                                                     <tr>
                                                         <th><?= lang('size_name') ?></th>
+                                                        <th width="100"><?= lang('display_order') ?></th>
                                                         <th width="150"><?= lang('actions') ?></th>
                                                     </tr>
                                                 </thead>
@@ -514,13 +520,29 @@ document.addEventListener('DOMContentLoaded', () => {
             if (collapseId) {
                 // Wait for tab transition to complete
                 setTimeout(() => {
-                    const collapseElement = document.getElementById(collapseId);
-                    if (collapseElement) {
-                        // Check if section is already expanded
-                        const isAlreadyExpanded = collapseElement.classList.contains('show');
+                    // First, collapse ALL product settings sections
+                    const allSections = ['sizesCollapse', 'clubsCollapse', 'manufacturersCollapse',
+                                       'categoriesCollapse', 'suppliersCollapse'];
 
-                        if (!isAlreadyExpanded) {
-                            // Expand the section using Bootstrap Collapse API
+                    allSections.forEach(sectionId => {
+                        const element = document.getElementById(sectionId);
+                        if (element && element.classList.contains('show')) {
+                            // Use Bootstrap Collapse API to properly collapse
+                            const bsCollapse = bootstrap.Collapse.getInstance(element);
+                            if (bsCollapse) {
+                                bsCollapse.hide();
+                            } else {
+                                // If no instance exists, just remove the 'show' class
+                                element.classList.remove('show');
+                            }
+                        }
+                    });
+
+                    // Small delay to ensure collapse animations complete
+                    setTimeout(() => {
+                        const collapseElement = document.getElementById(collapseId);
+                        if (collapseElement) {
+                            // Expand ONLY the target section using Bootstrap Collapse API
                             const bsCollapse = new bootstrap.Collapse(collapseElement, {
                                 show: true
                             });
@@ -532,14 +554,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                     block: 'start'
                                 });
                             }, 350); // Wait for collapse animation
-                        } else {
-                            // Already expanded, just scroll to it
-                            collapseElement.scrollIntoView({
-                                behavior: 'smooth',
-                                block: 'start'
-                            });
                         }
-                    }
+                    }, 100); // Wait for collapse animations to complete
                 }, 200); // Wait for tab switch animation
             }
         } else {
@@ -727,6 +743,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function resetSizeForm() {
         document.getElementById('size_id').value = '';
         document.getElementById('size_name').value = '';
+        document.getElementById('display_order').value = '1';
         document.getElementById('add_size_btn').innerHTML = `<i class="bi bi-plus-circle me-2"></i><?= lang('add_size') ?>`;
         document.getElementById('cancel_size_btn').style.display = 'none';
     }
@@ -849,8 +866,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('sizes_list').innerHTML = result.sizes.map(size => `
                     <tr>
                         <td>${size.name}</td>
+                        <td>${size.display_order}</td>
                         <td>
-                            <button class="btn btn-sm btn-outline-primary edit-size" data-id="${size.id}" data-name="${size.name}">
+                            <button class="btn btn-sm btn-outline-primary edit-size" data-id="${size.id}" data-name="${size.name}" data-display-order="${size.display_order}">
                                 <i class="bi bi-pencil"></i>
                             </button>
                             <button class="btn btn-sm btn-outline-danger delete-size" data-id="${size.id}">
@@ -936,8 +954,10 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.addEventListener('click', () => {
                 const id = btn.dataset.id;
                 const name = btn.dataset.name;
+                const displayOrder = btn.dataset.displayOrder;
                 document.getElementById('size_id').value = id;
                 document.getElementById('size_name').value = name;
+                document.getElementById('display_order').value = displayOrder;
                 document.getElementById('add_size_btn').innerHTML = `<i class="bi bi-check-circle me-2"></i><?= lang('update_size') ?>`;
                 document.getElementById('cancel_size_btn').style.display = 'inline-block';
             });

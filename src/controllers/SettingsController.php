@@ -391,10 +391,16 @@ class SettingsController {
 
         $size_id = trim($_POST['size_id'] ?? '');
         $size_name = trim($_POST['size_name'] ?? '');
+        $display_order = trim($_POST['display_order'] ?? '1');
 
         // Validation
         if (empty($size_name)) {
             echo json_encode(['status' => 'error', 'message' => 'Size name is required.']);
+            return;
+        }
+
+        if (!ctype_digit($display_order) || (int)$display_order < 1) {
+            echo json_encode(['status' => 'error', 'message' => 'Display order must be a positive number.']);
             return;
         }
 
@@ -406,7 +412,7 @@ class SettingsController {
                     return;
                 }
                 // Add new size
-                $success = $this->repo->addSize($size_name);
+                $success = $this->repo->addSize($size_name, (int)$display_order);
                 $message = $success ? 'Size added successfully!' : 'Failed to add size.';
             } else {
                 // Check for duplicate before updating (excluding current ID)
@@ -415,7 +421,7 @@ class SettingsController {
                     return;
                 }
                 // Update existing size
-                $success = $this->repo->updateSize((int)$size_id, $size_name);
+                $success = $this->repo->updateSize((int)$size_id, $size_name, (int)$display_order);
                 $message = $success ? 'Size updated successfully!' : 'Failed to update size.';
             }
 

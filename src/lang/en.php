@@ -74,6 +74,7 @@ return [
 
     //Export
     'no_items_found' => 'No items found. Try adjusting your filters or',
+    'adjust_filters_or_add_items' => 'Try adjusting your search criteria or add a new item.',
     'export_to_excel' => 'Export to Excel',
     'club' => 'Club',
     'last_change' => 'Last Change',
@@ -227,6 +228,7 @@ return [
     'manage_clubs' => 'Manage Clubs',
     'manage_manufacturers' => 'Manage Manufacturers',
     'size_name' => 'Size Name',
+    'display_order' => 'Display Order',
     'club_name' => 'Club Name',
     'manufacturer_name' => 'Manufacturer Name',
     'add_size' => 'Add Size',
@@ -245,6 +247,7 @@ return [
     'manage_clubs' => 'Manage Clubs',
     'manage_manufacturers' => 'Manage Manufacturers',
     'size_name' => 'Size Name',
+    'display_order' => 'Display Order',
     'club_name' => 'Club Name',
     'manufacturer_name' => 'Manufacturer Name',
     'add_size' => 'Add Size',
