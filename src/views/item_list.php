@@ -13,18 +13,7 @@ function h($value) {
 <?php endif; ?>
 <div class="row justify-content-center">
     <div class="col-lg-12">
-        <?php if (empty($items) || !is_array($items)): ?>
-            <div id="noItemsContainer" class="card shadow-lg border-0 rounded-3">
-                <div class="card-body p-5 text-center">
-                    <h4 class="mb-3 text-muted"><?= lang('no_items_found') ?></h4>
-                    <p class="text-muted"><?= lang('no_items_found_message') ?></p>
-                    <a id="addNewItemLink" href="/create" class="btn btn-primary mt-3 nav-link-ajax">
-                        <i class="bi bi-plus-circle me-2"></i><?= lang('add_new_item') ?>
-                    </a>
-                </div>
-            </div>
-        <?php else: ?>
-            <div class="card shadow-lg border-0 rounded-3">
+        <div class="card shadow-lg border-0 rounded-3">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center rounded-top">
                     <h2 class="h4 mb-0 py-2" id="itemOverviewTitle">
                         <i class="bi bi-boxes me-2"></i><?= lang('item_overview') ?>
@@ -260,6 +249,19 @@ function h($value) {
                                 </tr>
                             </thead>
                             <tbody id="itemsTableBody">
+                                <?php if (empty($items) || !is_array($items)): ?>
+                                    <tr>
+                                        <td colspan="12" class="text-center py-5">
+                                            <div class="alert alert-info mb-0" role="alert">
+                                                <div class="mb-3">
+                                                    <i class="bi bi-funnel-fill fs-1 text-primary"></i>
+                                                </div>
+                                                <h5 class="mb-2"><?= lang('no_items_found') ?></h5>
+                                                <p class="mb-0"><?= lang('adjust_filters_or_add_items') ?></p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php else: ?>
                                 <?php foreach ($items as $item): ?>
                                     <tr id="itemRow_<?= h($item['id']) ?>"
                                         class="clickable-row"
@@ -331,10 +333,11 @@ function h($value) {
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
+                                <?php endif; ?>
                             </tbody>
                         </table>
                     </div>
-                    <?php if ($totalPages > 1): ?>
+                    <?php if (!empty($items) && is_array($items) && $totalPages > 1): ?>
                         <nav id="paginationNav">
                             <ul class="pagination justify-content-center" id="paginationList">
                                 <?php if ($page > 1): ?>
@@ -410,7 +413,6 @@ function h($value) {
                     <?php endif; ?>
                 </div>
             </div>
-        <?php endif; ?>
     </div>
 </div>
 <?php if (!$isAjax): ?>

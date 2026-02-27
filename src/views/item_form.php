@@ -273,7 +273,7 @@ $suppliers = $settingsRepo->getSuppliers();
                                     <small class="text-muted">
                                         <i class="bi bi-info-circle me-1"></i>
                                         <?= lang('cant_find_club') ?> 
-                                        <a href="/settings#product-settings" target="_blank" class="text-primary">
+                                        <a href="/settings#product-settings-club" target="_blank" class="text-primary">
                                             <?= lang('add_in_settings') ?>
                                         </a>
                                     </small>
