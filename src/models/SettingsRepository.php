@@ -110,9 +110,9 @@ class SettingsRepository {
     // === SIZE METHODS ===
     public function getSizes(): array {
         $sizes = [];
-        $sql = "SELECT id, name FROM sizes ORDER BY name";
+        $sql = "SELECT id, name, display_order FROM sizes ORDER BY display_order ASC, name ASC";
         $result = $this->conn->query($sql);
-        
+
         if ($result && $result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
                 $sizes[] = $row;
@@ -121,15 +121,15 @@ class SettingsRepository {
         return $sizes;
     }
 
-    public function addSize(string $name): bool {
-        $stmt = $this->conn->prepare("INSERT INTO sizes (name) VALUES (?)");
-        $stmt->bind_param("s", $name);
+    public function addSize(string $name, int $displayOrder = 1): bool {
+        $stmt = $this->conn->prepare("INSERT INTO sizes (name, display_order) VALUES (?, ?)");
+        $stmt->bind_param("si", $name, $displayOrder);
         return $stmt->execute();
     }
 
-    public function updateSize(int $id, string $name): bool {
-        $stmt = $this->conn->prepare("UPDATE sizes SET name = ? WHERE id = ?");
-        $stmt->bind_param("si", $name, $id);
+    public function updateSize(int $id, string $name, int $displayOrder): bool {
+        $stmt = $this->conn->prepare("UPDATE sizes SET name = ?, display_order = ? WHERE id = ?");
+        $stmt->bind_param("sii", $name, $displayOrder, $id);
         return $stmt->execute();
     }
 
@@ -140,7 +140,7 @@ class SettingsRepository {
     }
 
     public function getSizeById(int $id): ?array {
-        $stmt = $this->conn->prepare("SELECT id, name FROM sizes WHERE id = ?");
+        $stmt = $this->conn->prepare("SELECT id, name, display_order FROM sizes WHERE id = ?");
         $stmt->bind_param("i", $id);
         $stmt->execute();
         $result = $stmt->get_result();

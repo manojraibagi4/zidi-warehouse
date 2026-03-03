@@ -13,18 +13,7 @@ function h($value) {
 <?php endif; ?>
 <div class="row justify-content-center">
     <div class="col-lg-12">
-        <?php if (empty($items) || !is_array($items)): ?>
-            <div id="noItemsContainer" class="card shadow-lg border-0 rounded-3">
-                <div class="card-body p-5 text-center">
-                    <h4 class="mb-3 text-muted"><?= lang('no_items_found') ?></h4>
-                    <p class="text-muted"><?= lang('no_items_found_message') ?></p>
-                    <a id="addNewItemLink" href="/create" class="btn btn-primary mt-3 nav-link-ajax">
-                        <i class="bi bi-plus-circle me-2"></i><?= lang('add_new_item') ?>
-                    </a>
-                </div>
-            </div>
-        <?php else: ?>
-            <div class="card shadow-lg border-0 rounded-3">
+        <div class="card shadow-lg border-0 rounded-3">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center rounded-top">
                     <h2 class="h4 mb-0 py-2" id="itemOverviewTitle">
                         <i class="bi bi-boxes me-2"></i><?= lang('item_overview') ?>
@@ -248,6 +237,7 @@ function h($value) {
                                     <th scope="col"><?= Helper::renderSortHeader('productname', lang('product_name'), $filters) ?></th>
                                     <th scope="col"><?= Helper::renderSortHeader('article_no', lang('article_no'), $filters) ?></th>
                                     <th scope="col"><?= Helper::renderSortHeader('manufacturer', lang('manufacturer'), $filters) ?></th>
+                                    <th scope="col"><?= Helper::renderSortHeader('category', lang('category'), $filters) ?></th>
                                     <th scope="col"><?= Helper::renderSortHeader('size', lang('size'), $filters) ?></th>
                                     <th scope="col"><?= Helper::renderSortHeader('color', lang('color'), $filters) ?></th>
                                     <th scope="col"><?= Helper::renderSortHeader('quantity', lang('quantity'), $filters) ?></th>
@@ -259,6 +249,19 @@ function h($value) {
                                 </tr>
                             </thead>
                             <tbody id="itemsTableBody">
+                                <?php if (empty($items) || !is_array($items)): ?>
+                                    <tr>
+                                        <td colspan="12" class="text-center py-5">
+                                            <div class="alert alert-info mb-0" role="alert">
+                                                <div class="mb-3">
+                                                    <i class="bi bi-funnel-fill fs-1 text-primary"></i>
+                                                </div>
+                                                <h5 class="mb-2"><?= lang('no_items_found') ?></h5>
+                                                <p class="mb-0"><?= lang('adjust_filters_or_add_items') ?></p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php else: ?>
                                 <?php foreach ($items as $item): ?>
                                     <tr id="itemRow_<?= h($item['id']) ?>"
                                         class="clickable-row"
@@ -284,6 +287,7 @@ function h($value) {
                                         <td id="itemProductname_<?= h($item['id']) ?>"><?= h($item['productname']) ?></td>
                                         <td id="itemArticleNo_<?= h($item['id']) ?>"><?= h($item['article_no']) ?></td>
                                         <td id="itemManufacturer_<?= h($item['id']) ?>"><?= h($item['manufacturer']) ?></td>
+                                        <td id="itemCategory_<?= h($item['id']) ?>"><?= h($item['category']) ?></td>
                                         <td id="itemSize_<?= h($item['id']) ?>"><?= h($item['size']) ?></td>
                                         <td id="itemColor_<?= h($item['id']) ?>"><?= h($item['color']) ?></td>
                                         <td id="itemQuantity_<?= h($item['id']) ?>"><?= h($item['quantity']) ?></td>
@@ -313,6 +317,14 @@ function h($value) {
                                                 
                                                 <form action="/delete/<?= h($item['id']) ?>" method="POST" class="d-inline" onsubmit="return confirm('<?= lang('confirm_delete_item') ?>');">
                                                     <input type="hidden" name="csrf_token" value="<?= h(generateCsrfToken()) ?>">
+
+                                                    <!-- Preserve filter state -->
+                                                    <?php foreach ($filters as $key => $value): ?>
+                                                        <?php if (!empty($value) && $key !== 'page' && is_scalar($value)): ?>
+                                                            <input type="hidden" name="filter_<?= h($key) ?>" value="<?= h($value) ?>">
+                                                        <?php endif; ?>
+                                                    <?php endforeach; ?>
+
                                                     <button type="submit" class="btn btn-sm btn-danger" title="<?= lang('delete_item') ?>">
                                                         <i class="bi bi-trash"></i>
                                                     </button>
@@ -321,10 +333,11 @@ function h($value) {
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
+                                <?php endif; ?>
                             </tbody>
                         </table>
                     </div>
-                    <?php if ($totalPages > 1): ?>
+                    <?php if (!empty($items) && is_array($items) && $totalPages > 1): ?>
                         <nav id="paginationNav">
                             <ul class="pagination justify-content-center" id="paginationList">
                                 <?php if ($page > 1): ?>
@@ -400,7 +413,6 @@ function h($value) {
                     <?php endif; ?>
                 </div>
             </div>
-        <?php endif; ?>
     </div>
 </div>
 <?php if (!$isAjax): ?>
