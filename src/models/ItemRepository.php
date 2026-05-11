@@ -60,8 +60,8 @@ class ItemRepository {
         }
         
         if (!empty($filters['size'])) {
-            $conditions[] = "size LIKE ?";
-            $params[] = "%" . $filters['size'] . "%";
+            $conditions[] = "size = ?";
+            $params[] = $filters['size'];
             $types .= "s";
         }
         
@@ -173,8 +173,8 @@ class ItemRepository {
         }
         
         if (!empty($filters['size'])) {
-            $conditions[] = "size LIKE ?";
-            $params[] = "%" . $filters['size'] . "%";
+            $conditions[] = "size = ?";
+            $params[] = $filters['size'];
             $types .= "s";
         }
         
